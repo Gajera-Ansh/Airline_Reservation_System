@@ -57,7 +57,14 @@ public class ArrayList<T> implements List<T> {
         return false;
     }
 
-    private void resize() {
+    public void clear() {
+        for (int i = 0; i < size; i++) {
+            elements[i] = null;
+        }
+        size = 0;
+    }
+
+    public void resize() {
         Object[] newArray = new Object[elements.length * 2];
         System.arraycopy(elements, 0, newArray, 0, size);
         elements = newArray;
