@@ -105,7 +105,14 @@ public class App {
                 }
                 System.out.print("Enter Phone: ");
                 String phone = sc.next().trim();
-                if (!phone.matches("^\\d{10}$")) {
+                if (phone.matches("^\\d{10}$")) {
+                    for (int i = 0; i < passengers.size(); i++) {
+                        if (passengers.get(i).getPhone().equals(phone)) {
+                            System.out.println(red + "\nPhone number already exists! Please use a different phone number." + reset);
+                            return;
+                        }
+                    }
+                } else {
                     System.out.println(red + "\nInvalid phone number! Please enter a 10-digit number." + reset);
                     return;
                 }
