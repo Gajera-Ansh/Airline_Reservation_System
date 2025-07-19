@@ -6,9 +6,12 @@ import airline.model.*;
 import airline.util.*;
 
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import java.util.Date;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class App {
@@ -19,8 +22,9 @@ public class App {
     public static Scanner sc = new Scanner(System.in);
     public static DBUtil dbUtil = new DBUtil();
     public static FlightDAO flightDAO = new FlightDAO();
-    public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+    public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    public static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     static {
         System.out.println("\n===============================================");
@@ -65,25 +69,29 @@ public class App {
             System.out.println("4. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
+//              ================================== User Login =====================================
                 case 1 -> {
-                    System.out.print("\nEnter Email: ");
-                    String email = sc.next().trim();
-                    System.out.print("Enter Password: ");
-                    String password = sc.next().trim();
-                    boolean found = false;
-                    for (int i = 0; i < passengers.size(); i++) {
-                        if (passengers.get(i).getEmail().equals(email) && passengers.get(i).getPass().equals(password)) {
-                            found = true;
-                            System.out.println(green + "\nLogin successful! Welcome " + passengers.get(i).getName() + reset);
+//                    System.out.print("\nEnter Email: ");
+//                    String email = sc.next().trim();
+//                    System.out.print("Enter Password: ");
+//                    String password = sc.next().trim();
+//                    boolean found = false;
+//                    for (int i = 0; i < passengers.size(); i++) {
+//                        if (passengers.get(i).getEmail().equals(email) && passengers.get(i).getPass().equals(password)) {
+//                            found = true;
+//                            System.out.println(green + "\nLogin successful! Welcome " + passengers.get(i).getName() + reset);
+//                            passengerMenu();
+//                            break;
+//                        }
+//                    }
+//                    if (!found) {
+//                        System.out.println(red + "\nInvalid email or password!" + reset);
+//                        continue;
+//                    }
                             passengerMenu();
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        System.out.println(red + "\nInvalid email or password!" + reset);
-                        continue;
-                    }
+
                 }
+//              =================================== User Registration ===================================
                 case 2 -> {
                     System.out.print("\nEnter Name: ");
                     sc.nextLine();
@@ -164,8 +172,9 @@ public class App {
         }
     }
 
-    public static void passengerMenu() {
+    public static void passengerMenu() throws Exception {
         while (true) {
+            ArrayList<Flight> flights = FlightDAO.getFlight();
             System.out.println("\n===== PASSENGER MENU =====");
             System.out.println("1. Make a Reservation");
             System.out.println("2. View Reservations");
@@ -175,7 +184,51 @@ public class App {
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
                 case 1 -> {
-                    break;
+                    System.out.print("\nEnter departure: ");
+                    String departure = sc.next().trim();
+                    if (!departure.matches("^[a-zA-Z\\s]+$")) {
+                        System.out.println(red + "\nInvalid departure! Please use only letters and spaces." + reset);
+                        continue;
+                    }
+                    System.out.print("Enter destination: ");
+                    String destination = sc.next().trim();
+                    if (!destination.matches("^[a-zA-Z\\s]+$")) {
+                        System.out.println(red + "\nInvalid destination! Please use only letters and spaces." + reset);
+                        continue;
+                    }
+                    System.out.print("Enter date(yyyy-MM-dd): ");
+                    String date = sc.next().trim();
+                    if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                        System.out.println(red + "\nInvalid date format! Please use yyyy-MM-dd." + reset);
+                        continue;
+                    } else {
+                        LocalDate today = LocalDate.now();
+                        LocalDate inputDate = LocalDate.parse(date, dateFormatter);
+                        if (inputDate.isBefore(today)) {
+                            System.out.println(red + "\nDate cannot be in the past! Please enter a valid date." + reset);
+                            continue;
+                        }
+                    }
+
+                    System.out.println("\nSearching for available flights...");
+                    Thread.sleep(2000);
+                    ArrayList<Flight> availableFlights = new ArrayList<>();
+                    for (int i = 0; i < flights.size(); i++) {
+                        boolean matchesRoute = flights.get(i).getDeparture().equalsIgnoreCase(departure) &&
+                                flights.get(i).getDestination().equalsIgnoreCase(destination);
+
+                        boolean matchesDate = Objects.requireNonNull(FlightDAO.getFlightDate(flights.get(i).getFlight_id())).isEqual(LocalDate.parse(date, dateFormatter));
+
+                        boolean hasAvailableSeats = flights.get(i).getAvailable_seats() > 0;
+
+                        if (matchesRoute && matchesDate && hasAvailableSeats) {
+                            availableFlights.add(flights.get(i));
+                        }
+                    }
+
+                    if (!displayAvailableFlights(availableFlights)) {
+                        continue;
+                    }
                 }
                 case 2 -> {
                     break;
@@ -191,6 +244,42 @@ public class App {
                     System.exit(0);
                 }
             }
+        }
+    }
+
+    public static boolean displayAvailableFlights(ArrayList<Flight> availableFlights) {
+        if (availableFlights.size() == 0) {
+            System.out.println(red + "\nNo flights available for the selected criteria." + reset);
+            return false;
+        } else {
+            System.out.println("\nAvailable Flights:");
+            for (int i = 0; i < availableFlights.size(); i++) {
+                System.out.printf("\n%-10s %-15s %-15s %-15s %-20s %-20s %-13s %-17s %-10s\n",
+                        "Flight ID", "Flight Number", "Departure", "Destination",
+                        "Departure Time", "Arrival Time",
+                        "Total Seats", "Available Seats", "Price");
+                System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------");
+                System.out.printf("%-10s %-15s %-15s %-15s %-20s %-20s %-13d %-17d ₹%-10.2f\n",
+                        availableFlights.get(i).getFlight_id(),
+                        availableFlights.get(i).getFlight_number(),
+                        availableFlights.get(i).getDeparture(),
+                        availableFlights.get(i).getDestination(),
+                        availableFlights.get(i).getDeparture_time().format(dateTimeFormatter),
+                        availableFlights.get(i).getArrival_time().format(dateTimeFormatter),
+                        availableFlights.get(i).getTotal_seats(),
+                        availableFlights.get(i).getAvailable_seats(),
+                        availableFlights.get(i).getPrice()
+                );
+
+
+//                System.out.println("\nFlight ID: " + availableFlights.get(i).getFlight_id() +"\tFlight Number: " + availableFlights.get(i).getFlight_number() +
+//                                   "\n\nDeparture: " + availableFlights.get(i).getDeparture() +"\tDestination: " + availableFlights.get(i).getDestination() +
+//                                   "\nDeparture Time: " + availableFlights.get(i).getDeparture_time().format(dateTimeFormatter) +
+//                                   "\tArrival Time: " + availableFlights.get(i).getArrival_time().format(dateTimeFormatter) +
+//                                   "\n\nTotal Seats:     " + availableFlights.get(i).getTotal_seats() +"\tAvailable Seats: " + availableFlights.get(i).getAvailable_seats() +
+//                                   "\nPrice:  ₹" + availableFlights.get(i).getPrice());
+            }
+            return true;
         }
     }
 }
