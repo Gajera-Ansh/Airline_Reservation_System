@@ -268,14 +268,6 @@ public class App {
                         availableFlights.get(i).getAvailable_seats(),
                         availableFlights.get(i).getPrice()
                 );
-
-
-//                System.out.println("\nFlight ID: " + availableFlights.get(i).getFlight_id() +"\tFlight Number: " + availableFlights.get(i).getFlight_number() +
-//                                   "\n\nDeparture: " + availableFlights.get(i).getDeparture() +"\tDestination: " + availableFlights.get(i).getDestination() +
-//                                   "\nDeparture Time: " + availableFlights.get(i).getDeparture_time().format(dateTimeFormatter) +
-//                                   "\tArrival Time: " + availableFlights.get(i).getArrival_time().format(dateTimeFormatter) +
-//                                   "\n\nTotal Seats:     " + availableFlights.get(i).getTotal_seats() +"\tAvailable Seats: " + availableFlights.get(i).getAvailable_seats() +
-//                                   "\nPrice:  ₹" + availableFlights.get(i).getPrice());
             }
             return true;
         }
