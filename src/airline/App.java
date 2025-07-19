@@ -71,25 +71,23 @@ public class App {
             switch (sc.nextInt()) {
 //              ================================== User Login =====================================
                 case 1 -> {
-//                    System.out.print("\nEnter Email: ");
-//                    String email = sc.next().trim();
-//                    System.out.print("Enter Password: ");
-//                    String password = sc.next().trim();
-//                    boolean found = false;
-//                    for (int i = 0; i < passengers.size(); i++) {
-//                        if (passengers.get(i).getEmail().equals(email) && passengers.get(i).getPass().equals(password)) {
-//                            found = true;
-//                            System.out.println(green + "\nLogin successful! Welcome " + passengers.get(i).getName() + reset);
-//                            passengerMenu();
-//                            break;
-//                        }
-//                    }
-//                    if (!found) {
-//                        System.out.println(red + "\nInvalid email or password!" + reset);
-//                        continue;
-//                    }
+                    System.out.print("\nEnter Email: ");
+                    String email = sc.next().trim();
+                    System.out.print("Enter Password: ");
+                    String password = sc.next().trim();
+                    boolean found = false;
+                    for (int i = 0; i < passengers.size(); i++) {
+                        if (passengers.get(i).getEmail().equals(email) && passengers.get(i).getPass().equals(password)) {
+                            found = true;
+                            System.out.println(green + "\nLogin successful! Welcome " + passengers.get(i).getName() + reset);
                             passengerMenu();
-
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        System.out.println(red + "\nInvalid email or password!" + reset);
+                        continue;
+                    }
                 }
 //              =================================== User Registration ===================================
                 case 2 -> {
