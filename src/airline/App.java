@@ -47,7 +47,6 @@ public class App {
                 case 3 -> {
                     System.out.println(red + "\nExiting the system\n" + reset);
                     System.exit(0);
-                    break;
                 }
                 default -> {
                     System.out.println(red + "\nInvalid choice! Please try again." + reset);
@@ -57,92 +56,110 @@ public class App {
     }
 
     public static void passengerLogin() throws Exception {
-        ArrayList<Passenger> passengers = PassengerDAO.getPassengers();
-        System.out.println("\n===== PASSENGER LOGIN =====");
-        System.out.println("1. Login via Email and Password");
-        System.out.println("2. Register as New Passenger");
-        System.out.println("3. Return to Main Menu");
-        System.out.print("Enter choice: ");
-        switch (sc.nextInt()) {
-            case 1 -> {
-                System.out.print("\nEnter Email: ");
-                String email = sc.next().trim();
-                System.out.print("Enter Password: ");
-                String password = sc.next().trim();
-                boolean found = false;
-                for (int i = 0; i < passengers.size(); i++) {
-                    if (passengers.get(i).getEmail().equals(email) && passengers.get(i).getPass().equals(password)) {
-                        found = true;
-                        System.out.println(green + "\nLogin successful! Welcome " + passengers.get(i).getName() + reset);
-                        passengerMenu();
-                        break;
-                    }
-                }
-                if (!found) {
-                    System.out.println(red + "\nInvalid email or password!" + reset);
-                }
-            }
-            case 2 -> {
-                System.out.print("\nEnter Name: ");
-                sc.nextLine();
-                String name = sc.nextLine().trim();
-                if (!name.matches("^[a-zA-Z\\s]+$")) {
-                    System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
-                    return;
-                }
-                System.out.print("Enter Email: ");
-                String email = sc.next().trim();
-                if (email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$")) {
+        while (true) {
+            ArrayList<Passenger> passengers = PassengerDAO.getPassengers();
+            System.out.println("\n===== PASSENGER LOGIN =====");
+            System.out.println("1. Login via Email and Password");
+            System.out.println("2. Register as New Passenger");
+            System.out.println("3. Return to Main Menu");
+            System.out.println("4. Exit System");
+            System.out.print("Enter choice: ");
+            switch (sc.nextInt()) {
+                case 1 -> {
+                    System.out.print("\nEnter Email: ");
+                    String email = sc.next().trim();
+                    System.out.print("Enter Password: ");
+                    String password = sc.next().trim();
+                    boolean found = false;
                     for (int i = 0; i < passengers.size(); i++) {
-                        if (passengers.get(i).getEmail().equals(email)) {
-                            System.out.println(red + "\nEmail already exists! Please use a different email." + reset);
-                            return;
+                        if (passengers.get(i).getEmail().equals(email) && passengers.get(i).getPass().equals(password)) {
+                            found = true;
+                            System.out.println(green + "\nLogin successful! Welcome " + passengers.get(i).getName() + reset);
+                            passengerMenu();
+                            break;
                         }
                     }
-                } else {
-                    System.out.println(red + "\nInvalid email format!" + reset);
-                    return;
+                    if (!found) {
+                        System.out.println(red + "\nInvalid email or password!" + reset);
+                        continue;
+                    }
                 }
-                System.out.print("Enter Phone: ");
-                String phone = sc.next().trim();
-                if (phone.matches("^\\d{10}$")) {
-                    for (int i = 0; i < passengers.size(); i++) {
-                        if (passengers.get(i).getPhone().equals(phone)) {
-                            System.out.println(red + "\nPhone number already exists! Please use a different phone number." + reset);
-                            return;
+                case 2 -> {
+                    System.out.print("\nEnter Name: ");
+                    sc.nextLine();
+                    String name = sc.nextLine().trim();
+                    if (!name.matches("^[a-zA-Z\\s]+$")) {
+                        System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
+                        continue;
+                    }
+                    System.out.print("Enter Email: ");
+                    String email = sc.next().trim();
+                    if (email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$")) {
+                        boolean emailExists = false;
+                        for (int i = 0; i < passengers.size(); i++) {
+                            if (passengers.get(i).getEmail().equals(email)) {
+                                System.out.println(red + "\nEmail already exists! Please use a different email." + reset);
+                                emailExists = true;
+                                break;
+                            }
                         }
+                        if (emailExists) {
+                            continue;
+                        }
+                    } else {
+                        System.out.println(red + "\nInvalid email format!" + reset);
+                        continue;
                     }
-                } else {
-                    System.out.println(red + "\nInvalid phone number! Please enter a 10-digit number." + reset);
+                    System.out.print("Enter Phone: ");
+                    String phone = sc.next().trim();
+                    if (phone.matches("^\\d{10}$")) {
+                        boolean phoneExists = false;
+                        for (int i = 0; i < passengers.size(); i++) {
+                            if (passengers.get(i).getPhone().equals(phone)) {
+                                System.out.println(red + "\nPhone number already exists! Please use a different phone number." + reset);
+                                phoneExists = true;
+                                break;
+                            }
+                        }
+                        if (phoneExists) {
+                            continue;
+                        }
+                    } else {
+                        System.out.println(red + "\nInvalid phone number! Please enter a 10-digit number." + reset);
+                        continue;
+                    }
+                    System.out.print("Enter Password: ");
+                    String password = sc.next();
+                    if (password.length() >= 6) {
+                        boolean hasAlpha = password.matches(".*a-zA-Z].*");
+                        boolean hasDigit = password.matches(".*\\d.*");
+                        boolean hasSpecialChar = password.matches(".*[_@#].*");
+                        int sum = (hasAlpha ? 1 : 0) + (hasDigit ? 1 : 0) + (hasSpecialChar ? 1 : 0);
+                        if (sum < 2) {
+                            System.out.println(red + "\nPassword must contain at least two of the following: letters, digits, or special characters (_@#)" + reset);
+                            continue;
+                        }
+                    } else {
+                        System.out.println(red + "\nPassword must be at least 6 characters long!" + reset);
+                        continue;
+                    }
+                    Passenger newPassenger = new Passenger(0, name, email, phone, password);
+                    if (PassengerDAO.addPassenger(newPassenger)) {
+                        System.out.println(green + "\nRegistration successful! You can now login." + reset);
+                    } else {
+                        System.out.println(red + "\nRegistration failed! Please try again." + reset);
+                    }
+                }
+                case 3 -> {
                     return;
                 }
-                System.out.print("Enter Password: ");
-                String password = sc.next();
-                if (password.length() >= 6) {
-                    boolean hasAlpha = password.matches(".*a-zA-Z].*");
-                    boolean hasDigit = password.matches(".*\\d.*");
-                    boolean hasSpecialChar = password.matches(".*[_@#].*");
-                    int sum = (hasAlpha ? 1 : 0) + (hasDigit ? 1 : 0) + (hasSpecialChar ? 1 : 0);
-                    if (sum < 2) {
-                        System.out.println(red + "\nPassword must contain at least two of the following: letters, digits, or special characters (_@#)" + reset);
-                        return;
-                    }
-                } else {
-                    System.out.println(red + "\nPassword must be at least 6 characters long!" + reset);
-                    return;
+                case 4 -> {
+                    System.out.println(red + "\nExiting the system\n" + reset);
+                    System.exit(0);
                 }
-                Passenger newPassenger = new Passenger(0, name, email, phone, password);
-                if (PassengerDAO.addPassenger(newPassenger)) {
-                    System.out.println(green + "\nRegistration successful! You can now login." + reset);
-                } else {
-                    System.out.println(red + "\nRegistration failed! Please try again." + reset);
+                default -> {
+                    System.out.println(red + "\nInvalid choice! Please try again." + reset);
                 }
-            }
-            case 3 -> {
-                return;
-            }
-            default -> {
-                System.out.println(red + "\nInvalid choice! Please try again." + reset);
             }
         }
     }
@@ -154,6 +171,7 @@ public class App {
             System.out.println("2. View Reservations");
             System.out.println("3. Cancel a Reservation");
             System.out.println("4. Return to Main Menu");
+            System.out.println("5. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
                 case 1 -> {
@@ -167,6 +185,10 @@ public class App {
                 }
                 case 4 -> {
                     return;
+                }
+                case 5 -> {
+                    System.out.println(red + "\nExiting the system\n" + reset);
+                    System.exit(0);
                 }
             }
         }
