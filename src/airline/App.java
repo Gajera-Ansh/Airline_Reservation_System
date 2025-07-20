@@ -106,7 +106,7 @@ public class App {
                     }
                     System.out.print("Enter Email: ");
                     String email = sc.next().trim();
-                    if (email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$")) {
+                    if (email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$")) {
                         boolean emailExists = false;
                         for (int i = 0; i < passengers.size(); i++) {
                             if (passengers.get(i).getEmail().equals(email)) {
