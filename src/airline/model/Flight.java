@@ -76,4 +76,8 @@ public class Flight {
     public int getAdmin_id() {
         return admin_id;
     }
+
+    public void setAvailable_seats(int available_seats) {
+        this.available_seats = available_seats;
+    }
 }

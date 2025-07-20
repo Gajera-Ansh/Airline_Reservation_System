@@ -12,7 +12,7 @@ public class DBUtil {
     static  {
         try {
             con = DriverManager.getConnection(URL, USER, PASSWORD);
-        } catch (SQLException e) {
+        } catch (SQLException _) {
         }
         if (con != null) {
             System.out.println("Database connection established successfully.");

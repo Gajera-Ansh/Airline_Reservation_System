@@ -68,11 +68,11 @@ public class HashMap<K, V> implements Map<K, V> {
         return size;
     }
 
-    private int hash(K key) {
+    public int hash(K key) {
         return Math.abs(key.hashCode()) % table.length;
     }
 
-    private void resize() {
+    public void resize() {
         Entry<K, V>[] oldTable = table;
         table = new Entry[table.length * 2];
         size = 0;
@@ -85,7 +85,13 @@ public class HashMap<K, V> implements Map<K, V> {
         }
     }
 
-    private static class Entry<K, V> {
+    public void putIfAbsent(K key, V value) {
+        if (!containsKey(key)) {
+            put(key, value);
+        }
+    }
+
+    public static class Entry<K, V> {
         K key;
         V value;
         Entry<K, V> next;

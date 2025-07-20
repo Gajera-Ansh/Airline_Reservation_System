@@ -15,6 +15,10 @@ public class Passenger {
         this.pass = pass;
     }
 
+    public int getPassenger_id() {
+        return passenger_id;
+    }
+
     public String getName() {
         return name;
     }

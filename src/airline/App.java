@@ -4,6 +4,7 @@ import airline.dao.*;
 import airline.ds.*;
 import airline.model.*;
 import airline.util.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
 import java.time.LocalDate;
@@ -40,18 +41,22 @@ public class App {
             System.out.println("3. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
+//                =================================== Passenger Login ==================================
                 case 1 -> {
                     passengerLogin();
                     break;
                 }
+//                =================================== Admin Login ==================================
                 case 2 -> {
 
                     break;
                 }
+//                =================================== Exit System ==================================
                 case 3 -> {
                     System.out.println(red + "\nExiting the system\n" + reset);
                     System.exit(0);
                 }
+//                =================================== Invalid Choice ==================================
                 default -> {
                     System.out.println(red + "\nInvalid choice! Please try again." + reset);
                 }
@@ -80,7 +85,7 @@ public class App {
                         if (passengers.get(i).getEmail().equals(email) && passengers.get(i).getPass().equals(password)) {
                             found = true;
                             System.out.println(green + "\nLogin successful! Welcome " + passengers.get(i).getName() + reset);
-                            passengerMenu();
+                            passengerMenu(passengers.get(i));
                             break;
                         }
                     }
@@ -88,8 +93,9 @@ public class App {
                         System.out.println(red + "\nInvalid email or password!" + reset);
                         continue;
                     }
+
                 }
-//              =================================== User Registration ===================================
+//              ============================== User Registration ==================================
                 case 2 -> {
                     System.out.print("\nEnter Name: ");
                     sc.nextLine();
@@ -156,13 +162,16 @@ public class App {
                         System.out.println(red + "\nRegistration failed! Please try again." + reset);
                     }
                 }
+//              ================================== Return to Main Menu ==========================
                 case 3 -> {
                     return;
                 }
+//              ================================== Exit System ==================================
                 case 4 -> {
                     System.out.println(red + "\nExiting the system\n" + reset);
                     System.exit(0);
                 }
+//              ================================== Invalid Choice ==============================
                 default -> {
                     System.out.println(red + "\nInvalid choice! Please try again." + reset);
                 }
@@ -170,7 +179,7 @@ public class App {
         }
     }
 
-    public static void passengerMenu() throws Exception {
+    public static void passengerMenu(Passenger p) throws Exception {
         while (true) {
             ArrayList<Flight> flights = FlightDAO.getFlight();
             System.out.println("\n===== PASSENGER MENU =====");
@@ -181,15 +190,17 @@ public class App {
             System.out.println("5. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
+//              ================================== Make a Reservation ==================================
                 case 1 -> {
                     System.out.print("\nEnter departure: ");
-                    String departure = sc.next().trim();
+                    sc.nextLine();
+                    String departure = sc.nextLine().trim();
                     if (!departure.matches("^[a-zA-Z\\s]+$")) {
                         System.out.println(red + "\nInvalid departure! Please use only letters and spaces." + reset);
                         continue;
                     }
                     System.out.print("Enter destination: ");
-                    String destination = sc.next().trim();
+                    String destination = sc.nextLine().trim();
                     if (!destination.matches("^[a-zA-Z\\s]+$")) {
                         System.out.println(red + "\nInvalid destination! Please use only letters and spaces." + reset);
                         continue;
@@ -208,12 +219,10 @@ public class App {
                         }
                     }
 
-                    System.out.println("\nSearching for available flights...");
-                    Thread.sleep(2000);
+//                  ================================== Search for Flights ==================================
                     ArrayList<Flight> availableFlights = new ArrayList<>();
                     for (int i = 0; i < flights.size(); i++) {
-                        boolean matchesRoute = flights.get(i).getDeparture().equalsIgnoreCase(departure) &&
-                                flights.get(i).getDestination().equalsIgnoreCase(destination);
+                        boolean matchesRoute = flights.get(i).getDeparture().equalsIgnoreCase(departure) && flights.get(i).getDestination().equalsIgnoreCase(destination);
 
                         boolean matchesDate = Objects.requireNonNull(FlightDAO.getFlightDate(flights.get(i).getFlight_id())).isEqual(LocalDate.parse(date, dateFormatter));
 
@@ -224,50 +233,140 @@ public class App {
                         }
                     }
 
+//                  ================================ Display Available Flights ==================================
                     if (!displayAvailableFlights(availableFlights)) {
                         continue;
                     }
+
+//                  ================================== More Flights Available ==================================
+                    ArrayList<Flight> moreFlights = moreFlights(departure, destination, flights);
+                    availableFlights = moreFlights == null ? availableFlights : moreFlights;
+
+//                   ================================= Make a Reservation ==================================
+                    makeAReservation(availableFlights, p);
                 }
+//              ================================== View Reservations ==================================
                 case 2 -> {
                     break;
                 }
+//              ================================== Cancel a Reservation ==================================
                 case 3 -> {
                     break;
                 }
+//              ================================== Return to Main Menu ==================================
                 case 4 -> {
                     return;
                 }
+//              ================================== Exit System ==================================
                 case 5 -> {
                     System.out.println(red + "\nExiting the system\n" + reset);
                     System.exit(0);
+                }
+//              ================================== Invalid Choice ==================================
+                default -> {
+                    System.out.println(red + "\nInvalid choice! Please try again." + reset);
                 }
             }
         }
     }
 
-    public static boolean displayAvailableFlights(ArrayList<Flight> availableFlights) {
+    public static void makeAReservation(ArrayList<Flight> flights, Passenger p) throws Exception {
+        while (true) {
+            boolean reservationStatus = false;
+            ArrayList<Flight> flightList = flights;
+//          ================================== Select Flight ==================================
+            System.out.print("\nWant to make a reservation? (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+            if (choice == 'y') {
+                System.out.print("\nEnter flight ID: ");
+                int flightId = sc.nextInt();
+                System.out.print("Enter number of seats to reserve: ");
+                int seats = sc.nextInt();
+//               ================================= Validate Seats ==================================
+                if (seats > 0) {
+                    boolean flag = false;
+//                    ================================ Check Flight ID and Available Seats ==================================
+                    for (int i = 0; i < flightList.size(); i++) {
+                        if (flightList.get(i).getFlight_id() == flightId && flightList.get(i).getAvailable_seats() >= seats) {
+                            flag = false;
+//                           ================================= Add Reservation ==================================
+                            reservationStatus = ReservationDAO.addReservation(flightList.get(i).getFlight_id(), p.getPassenger_id(), seats);
+                        } else {
+                            flag = true;
+                        }
+                    }
+//                   ================================= Invalid Flight ID or Seats ==================================
+                    if(flag) {
+                        System.out.println(red + "\nInvalid flight ID or insufficient seats available! Please try again." + reset);
+                        continue;
+                    }
+                }
+//                ================================ Invalid Number of Seats ==================================
+                else {
+                    System.out.println(red + "\nInvalid number of seats! Please enter a positive number." + reset);
+                    continue;
+                }
+            } else if (choice == 'n') {
+                return;
+            } else {
+                System.out.println(red + "\nInvalid choice! Please try again." + reset);
+                continue;
+            }
+//            ================================ Reservation Confirmation ==================================
+            if(reservationStatus) {
+                return;
+            } else {
+                continue;
+            }
+        }
+    }
+
+    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws Exception {
+        while (true) {
+//            ================================ Check for More Flights ==================================
+            ArrayList<Flight> flight = flights;
+            ArrayList<Flight> availableFlights = new ArrayList<>();
+            System.out.print("\nWant to see more flights? (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+
+            if (choice == 'y') {
+//                ================================ Search for More Flights ==================================
+                for (int i = 0; i < flight.size(); i++) {
+                    boolean matchesRoute = flight.get(i).getDeparture().equalsIgnoreCase(departure) && flight.get(i).getDestination().equalsIgnoreCase(destination);
+
+                    boolean hasAvailableSeats = flight.get(i).getAvailable_seats() > 0;
+
+                    if (matchesRoute && hasAvailableSeats) {
+                        availableFlights.add(flight.get(i));
+                    }
+                }
+//                ================================ Display Available Flights ==================================
+                displayAvailableFlights(availableFlights);
+                return availableFlights;
+            } else if (choice == 'n') {
+                return null;
+            } else {
+                System.out.println(red + "\nInvalid choice! Please try again." + reset);
+                continue;
+            }
+        }
+    }
+
+    public static boolean displayAvailableFlights(ArrayList<Flight> availableFlights) throws Exception {
+//        ================================ No Flights Available ==================================
         if (availableFlights.size() == 0) {
             System.out.println(red + "\nNo flights available for the selected criteria." + reset);
             return false;
-        } else {
+        }
+//        ================================ Display Available Flights ==================================
+        else {
+            System.out.println("\nSearching for available flights...");
+            Thread.sleep(2000);
             System.out.println("\nAvailable Flights:");
+            System.out.printf("\n%-10s %-15s %-15s %-15s %-20s %-20s %-13s %-17s %-10s\n", "Flight ID", "Flight Number", "Departure", "Destination", "Departure Time", "Arrival Time", "Total Seats", "Available Seats", "Price");
+            System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------");
             for (int i = 0; i < availableFlights.size(); i++) {
-                System.out.printf("\n%-10s %-15s %-15s %-15s %-20s %-20s %-13s %-17s %-10s\n",
-                        "Flight ID", "Flight Number", "Departure", "Destination",
-                        "Departure Time", "Arrival Time",
-                        "Total Seats", "Available Seats", "Price");
-                System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------");
-                System.out.printf("%-10s %-15s %-15s %-15s %-20s %-20s %-13d %-17d ₹%-10.2f\n",
-                        availableFlights.get(i).getFlight_id(),
-                        availableFlights.get(i).getFlight_number(),
-                        availableFlights.get(i).getDeparture(),
-                        availableFlights.get(i).getDestination(),
-                        availableFlights.get(i).getDeparture_time().format(dateTimeFormatter),
-                        availableFlights.get(i).getArrival_time().format(dateTimeFormatter),
-                        availableFlights.get(i).getTotal_seats(),
-                        availableFlights.get(i).getAvailable_seats(),
-                        availableFlights.get(i).getPrice()
-                );
+                System.out.printf("%-10s %-15s %-15s %-15s %-20s %-20s %-13d %-17d ₹%-10.2f\n", availableFlights.get(i).getFlight_id(), availableFlights.get(i).getFlight_number(), availableFlights.get(i).getDeparture(), availableFlights.get(i).getDestination(), availableFlights.get(i).getDeparture_time().format(dateTimeFormatter), availableFlights.get(i).getArrival_time().format(dateTimeFormatter), availableFlights.get(i).getTotal_seats(), availableFlights.get(i).getAvailable_seats(), availableFlights.get(i).getPrice());
             }
             return true;
         }
