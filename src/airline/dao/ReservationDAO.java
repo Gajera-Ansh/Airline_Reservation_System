@@ -1,6 +1,7 @@
 package airline.dao;
 
 import airline.App;
+import airline.PDFReceiptGenerator;
 import airline.ds.ArrayList;
 import airline.util.DBUtil;
 import airline.ds.HashMap;
@@ -32,7 +33,6 @@ public class ReservationDAO {
             }
         }
 
-//        ==
         while (true) {
             System.out.print("Confirming reservation for " + seats + " seats for flight ID: " + flightId + "  (y/n):");
             char choice = sc.next().trim().toLowerCase().charAt(0);
@@ -46,6 +46,7 @@ public class ReservationDAO {
                     if (updateSeatsPst.executeUpdate() > 0) {
                         con.commit();
                         System.out.println(App.green + "\nReservation confirmed successfully." + App.reset);
+                        PDFReceiptGenerator.generateReceipt(flightId, passengerId, seats);
                     } else {
                         con.rollback();
                         System.out.println(App.red + "\nFailed to update available seats. Reservation rolled back." + App.reset);
@@ -71,7 +72,7 @@ public class ReservationDAO {
 
     public static boolean makePayment(int passenger_id, int flight_id, int seats) throws Exception {
 //        ========== QR Code Generation ==========
-        FileInputStream fis = new FileInputStream("src/QR.png");
+        FileInputStream fis = new FileInputStream("src/airline/QR.png");
         FileOutputStream fos = new FileOutputStream("D://QR.png");
         int i = fis.read();
 
@@ -99,7 +100,7 @@ public class ReservationDAO {
         fw.write(pass); // Write the password to the file
         fw.close();
         File f2 = new File("D://pass.txt");
-        System.out.print("Enter the password (which is print in pass.txt file " + App.green + f2.getAbsolutePath() + App.reset + ") to confirm payment: ");
+        System.out.print("\nEnter the password (which is print in pass.txt file " + App.green + f2.getAbsolutePath() + App.reset + ") to confirm payment: ");
         String inputPass = sc.nextLine().trim();
         if (inputPass.equals(pass)) {
             PaymentDAO.addPayment(passenger_id, flight_id, seats); // Update payment database
