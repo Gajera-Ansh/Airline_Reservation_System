@@ -5,6 +5,7 @@ import airline.ds.ArrayList;
 import airline.util.DBUtil;
 import airline.ds.HashMap;
 
+import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,21 +32,27 @@ public class ReservationDAO {
             }
         }
 
+//        ==
         while (true) {
             System.out.print("Confirming reservation for " + seats + " seats for flight ID: " + flightId + "  (y/n):");
             char choice = sc.next().trim().toLowerCase().charAt(0);
             if (choice == 'y') {
-                con.commit();
-                String updateSeatsSql = "UPDATE flights SET available_seats = available_seats - ? WHERE flight_id = ?";
-                PreparedStatement updateSeatsPst = con.prepareStatement(updateSeatsSql);
-                updateSeatsPst.setInt(1, seats);
-                updateSeatsPst.setInt(2, flightId);
-                if (updateSeatsPst.executeUpdate() > 0) {
+                if (makePayment(passengerId, flightId, seats)) {
                     con.commit();
-                    System.out.println(App.green + "\nReservation confirmed successfully." + App.reset);
+                    String updateSeatsSql = "UPDATE flights SET available_seats = available_seats - ? WHERE flight_id = ?";
+                    PreparedStatement updateSeatsPst = con.prepareStatement(updateSeatsSql);
+                    updateSeatsPst.setInt(1, seats);
+                    updateSeatsPst.setInt(2, flightId);
+                    if (updateSeatsPst.executeUpdate() > 0) {
+                        con.commit();
+                        System.out.println(App.green + "\nReservation confirmed successfully." + App.reset);
+                    } else {
+                        con.rollback();
+                        System.out.println(App.red + "\nFailed to update available seats. Reservation rolled back." + App.reset);
+                        return false;
+                    }
                 } else {
                     con.rollback();
-                    System.out.println(App.red + "\nFailed to update available seats. Reservation rolled back." + App.reset);
                     return false;
                 }
                 break;
@@ -62,6 +69,48 @@ public class ReservationDAO {
         return true;
     }
 
+    public static boolean makePayment(int passenger_id, int flight_id, int seats) throws Exception {
+//        ========== QR Code Generation ==========
+        FileInputStream fis = new FileInputStream("src/QR.png");
+        FileOutputStream fos = new FileOutputStream("D://QR.png");
+        int i = fis.read();
+
+        while (i != -1) {
+            fos.write(i);
+            i = fis.read();
+        }
+        fos.close();
+        fis.close();
+        File f1 = new File("D://QR.png");
+        System.out.println("\nQR code is generated at " + App.green + f1.getAbsolutePath() + App.reset);
+        System.out.println("\nPlease scan the QR code to make the payment.");
+        System.out.print("\nPress Enter after payment is done.");
+        sc.nextLine(); // Consume the newline character left by previous input
+        sc.nextLine(); // Wait for user to press Enter
+
+//        ========== Password Generation ==========
+        FileWriter fw = new FileWriter("D://pass.txt");
+        int r = (int) (Math.random() * 1000);
+        String pass = r + "";
+        for (int j = 0; j < 5; j++) {
+            char c = (char) ('A' + (int) (Math.random() * 26));
+            pass = pass + c;
+        }
+        fw.write(pass); // Write the password to the file
+        fw.close();
+        File f2 = new File("D://pass.txt");
+        System.out.print("Enter the password (which is print in pass.txt file " + App.green + f2.getAbsolutePath() + App.reset + ") to confirm payment: ");
+        String inputPass = sc.nextLine().trim();
+        if (inputPass.equals(pass)) {
+            PaymentDAO.addPayment(passenger_id, flight_id, seats); // Update payment database
+            System.out.println(App.green + "\nPayment successful." + App.reset);
+        } else {
+            System.out.println(App.red + "\nPayment failed. Incorrect password." + App.reset);
+            return false;
+        }
+        return true;
+    }
+
     public static String generateSeatNumbers(int flightId) throws Exception {
         String seatNum = "";
         int totalSeats = 0;
@@ -70,7 +119,7 @@ public class ReservationDAO {
         String sql = "SELECT total_seats FROM flights WHERE flight_id = " + flightId;
         Statement st = DBUtil.con.createStatement();
         ResultSet rs = st.executeQuery(sql);
-        while(rs.next()) {
+        while (rs.next()) {
             totalSeats = rs.getInt(1);
         }
         do {

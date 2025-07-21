@@ -296,7 +296,7 @@ public class App {
                         }
                     }
 //                   ================================= Invalid Flight ID or Seats ==================================
-                    if(flag) {
+                    if (flag) {
                         System.out.println(red + "\nInvalid flight ID or insufficient seats available! Please try again." + reset);
                         continue;
                     }
@@ -313,7 +313,7 @@ public class App {
                 continue;
             }
 //            ================================ Reservation Confirmation ==================================
-            if(reservationStatus) {
+            if (reservationStatus) {
                 return;
             } else {
                 continue;
