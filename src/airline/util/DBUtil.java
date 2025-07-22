@@ -7,9 +7,9 @@ public class DBUtil {
     public static final String USER = "root";
     public static final String PASSWORD = "";
 
-    public static Connection  con;
+    public static Connection con;
 
-    static  {
+    static {
         try {
             con = DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (SQLException _) {

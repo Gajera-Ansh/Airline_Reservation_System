@@ -20,6 +20,7 @@ public class ReservationDAO {
 
     public static boolean addReservation(int flightId, int passengerId, int seats) throws Exception {
         con.setAutoCommit(false);
+        // insert reservation details into the reservations table
         for (int i = 1; i <= seats; i++) {
             String sql = "INSERT INTO reservations (flight_id, passenger_id, seat_number) VALUES (?, ?, ?)";
             PreparedStatement pst = con.prepareStatement(sql);
@@ -34,19 +35,29 @@ public class ReservationDAO {
         }
 
         while (true) {
-            System.out.print("Confirming reservation for " + seats + " seats for flight ID: " + flightId + "  (y/n):");
+
+            // Confirm reservation with the user before making payment
+            System.out.print("Confirming reservation for " + seats + " seats for flight ID: " + flightId + "  (y/n): ");
             char choice = sc.next().trim().toLowerCase().charAt(0);
             if (choice == 'y') {
                 if (makePayment(passengerId, flightId, seats)) {
                     con.commit();
+
+                    // Update available seats in flights table
                     String updateSeatsSql = "UPDATE flights SET available_seats = available_seats - ? WHERE flight_id = ?";
                     PreparedStatement updateSeatsPst = con.prepareStatement(updateSeatsSql);
                     updateSeatsPst.setInt(1, seats);
                     updateSeatsPst.setInt(2, flightId);
                     if (updateSeatsPst.executeUpdate() > 0) {
+
+                        // Update the report with the new reservation
+                        ReportDAO.updateReportForReserveSeat(flightId, seats);
+
+                        // Commit the transaction
                         con.commit();
                         System.out.println(App.green + "\nReservation confirmed successfully." + App.reset);
                         PDFReceiptGenerator.generateReceipt(flightId, passengerId, seats);
+                        return true;
                     } else {
                         con.rollback();
                         System.out.println(App.red + "\nFailed to update available seats. Reservation rolled back." + App.reset);
@@ -56,7 +67,6 @@ public class ReservationDAO {
                     con.rollback();
                     return false;
                 }
-                break;
             } else if (choice == 'n') {
                 con.rollback();
                 System.out.println(App.red + "\nReservation cancelled." + App.reset);
@@ -67,7 +77,6 @@ public class ReservationDAO {
                 continue;
             }
         }
-        return true;
     }
 
     public static boolean makePayment(int passenger_id, int flight_id, int seats) throws Exception {
@@ -97,13 +106,18 @@ public class ReservationDAO {
             char c = (char) ('A' + (int) (Math.random() * 26));
             pass = pass + c;
         }
-        fw.write(pass); // Write the password to the file
+
+        // Write the password to the file
+        fw.write(pass);
         fw.close();
+
         File f2 = new File("D://pass.txt");
         System.out.print("\nEnter the password (which is print in pass.txt file " + App.green + f2.getAbsolutePath() + App.reset + ") to confirm payment: ");
         String inputPass = sc.nextLine().trim();
         if (inputPass.equals(pass)) {
-            PaymentDAO.addPayment(passenger_id, flight_id, seats); // Update payment database
+
+            // Update payment database
+            PaymentDAO.addPayment(passenger_id, flight_id, seats);
             System.out.println(App.green + "\nPayment successful." + App.reset);
         } else {
             System.out.println(App.red + "\nPayment failed. Incorrect password." + App.reset);
@@ -116,19 +130,21 @@ public class ReservationDAO {
         String seatNum = "";
         int totalSeats = 0;
         ArrayList<String> seatList = new ArrayList<>();
-        seatNumbers.putIfAbsent(flightId, seatList);
+
         String sql = "SELECT total_seats FROM flights WHERE flight_id = " + flightId;
         Statement st = DBUtil.con.createStatement();
         ResultSet rs = st.executeQuery(sql);
         while (rs.next()) {
             totalSeats = rs.getInt(1);
         }
+
         do {
             int row = (int) (Math.random() * totalSeats) + 1;
             char col = (char) ('A' + (int) (Math.random() * 6));
             seatNum = row + String.valueOf(col);
         } while (seatList.contains(seatNum));
         seatList.add(seatNum);
+        seatNumbers.putIfAbsent(flightId, seatList);
         return seatNum;
     }
 }

@@ -23,11 +23,15 @@ public class FlightDAO {
     public static ArrayList<Flight> flights = new ArrayList<>();
 
     public static ArrayList getFlight() throws Exception {
+
+        // Fetch all flights from the database and return as an ArrayList
         String query = "SELECT * FROM flights";
         Statement st = DBUtil.con.createStatement();
         ResultSet rs = st.executeQuery(query);
         flights.clear();
         while (rs.next()) {
+
+            // Create a Flight object for each row in the result set and add it to the list
             flights.add(new Flight(rs.getInt("flight_id"), rs.getString("flight_number"),
                     rs.getString("flight_type"),
                     rs.getString("departure"), rs.getString("destination"),
@@ -39,6 +43,8 @@ public class FlightDAO {
     }
 
     public static LocalDate getFlightDate(int id) throws Exception {
+
+        // Fetch the date of a flight by its ID
         String sql = "SELECT DATE(departure_time) FROM flights WHERE flight_id = " + id;
         Statement st = DBUtil.con.createStatement();
         ResultSet rs = st.executeQuery(sql);
