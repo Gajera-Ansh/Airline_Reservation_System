@@ -13,7 +13,7 @@ public class PDFReceiptGenerator {
 
     public static void generateReceipt(int flight_id, int passenger_id, int seats) throws Exception {
         Document document = new Document();
-        String fileName = "D://Ticket.pdf";
+        String fileName = "D://Ticket_fId_" + flight_id + "_pId_" + passenger_id + ".pdf";
         PdfWriter.getInstance(document, new FileOutputStream(fileName));
         document.open();
 

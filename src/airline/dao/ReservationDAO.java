@@ -6,11 +6,11 @@ import airline.ds.ArrayList;
 import airline.util.DBUtil;
 import airline.ds.HashMap;
 
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetProvider;
 import java.io.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class ReservationDAO {
@@ -146,5 +146,63 @@ public class ReservationDAO {
         seatList.add(seatNum);
         seatNumbers.putIfAbsent(flightId, seatList);
         return seatNum;
+    }
+
+    public static void viewReservations(String passengerName, int flightId) throws Exception {
+
+        //
+        String sql = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE passengers.name = ? AND reservations.flight_id = ?";
+        PreparedStatement pst = con.prepareStatement(sql);
+        pst.setString(1, passengerName);
+        pst.setInt(2, flightId);
+        ResultSet rs = pst.executeQuery();
+
+        // Create a CachedRowSet to hold the result set in memory
+        CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();
+        crs.populate(rs); // Copy all rows into memory
+
+        int seats = 0;
+        if (crs.size() > 0) {
+            int passId = 0;
+            System.out.println(App.green + "\nReservation Details\n-------------------\n" + App.reset);
+
+            // Get flight details
+            String sql1 = "CALL getFlight(?, ?, ?, ?, ?, ?)";
+            CallableStatement pst1 = con.prepareCall(sql1);
+            pst1.setInt(1, flightId);
+            pst1.executeQuery();
+            System.out.println("Name: " + passengerName);
+            System.out.println("Flight ID: " + flightId);
+            System.out.println("Flight Number: " + pst1.getString(2));
+            System.out.println("Departure: " + pst1.getString(3));
+            System.out.println("Destination: " + pst1.getString(4) + "\n");
+            while (crs.next()) {
+                seats++;
+                passId = crs.getInt("passenger_id"); // Get passenger ID for payment and PDF generation
+                System.out.println("Reservation ID: " + crs.getInt("reservation_id"));
+                System.out.println("Seat Number: " + crs.getString("seat_number"));
+
+                // Handle different types of date objects
+                Object dateObj = crs.getObject("reservation_date");
+                Timestamp reservationDate;
+                if (dateObj instanceof LocalDateTime) {
+                    reservationDate = Timestamp.valueOf((LocalDateTime) dateObj);
+                } else if (dateObj instanceof Timestamp) {
+                    reservationDate = (Timestamp) dateObj;
+                } else {
+                    throw new SQLException("Unsupported datetime type: " + dateObj.getClass().getName());
+                }
+                System.out.println("Reservation Date: " + reservationDate.toLocalDateTime() + "\n");
+            }
+
+            // Ask user if they want to download the PDF receipt
+            System.out.print("\nYou want to download PDF (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+            if (choice == 'y') {
+                PDFReceiptGenerator.generateReceipt(flightId, passId, seats);
+            }
+        } else {
+            System.out.println(App.red + "\nNo reservations found for the given passenger name and flight ID." + App.reset);
+        }
     }
 }

@@ -4,14 +4,10 @@ import airline.dao.*;
 import airline.ds.*;
 import airline.model.*;
 import airline.util.*;
-import org.jetbrains.annotations.Nullable;
 
-import java.sql.Connection;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import java.util.Date;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -247,7 +243,20 @@ public class App {
                 }
 //              ================================== View Reservations ==================================
                 case 2 -> {
-                    break;
+                    System.out.print("\nEnter your full name: ");
+                    sc.nextLine();
+                    String name = sc.nextLine().trim();
+                    if (!name.matches("^[a-zA-Z\\s]+$")) {
+                        System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
+                        continue;
+                    }
+                    System.out.print("Enter flight ID: ");
+                    int flightId = sc.nextInt();
+                    if (flightId < 0) {
+                        System.out.println(red + "\nInvalid flight ID! Please enter a positive number." + reset);
+                        continue;
+                    }
+                    ReservationDAO.viewReservations(name, flightId);
                 }
 //              ================================== Cancel a Reservation ==================================
                 case 3 -> {
@@ -291,6 +300,7 @@ public class App {
                             flag = false;
 //                           ================================= Add Reservation ==================================
                             reservationStatus = ReservationDAO.addReservation(flightList.get(i).getFlight_id(), p.getPassenger_id(), seats);
+                            break;
                         } else {
                             flag = true;
                         }
