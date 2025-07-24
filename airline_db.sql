@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 20, 2025 at 06:55 PM
+-- Generation Time: Jul 24, 2025 at 07:16 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,28 @@ SET time_zone = "+00:00";
 --
 -- Database: `airline_db`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getFlight` (IN `flightId` INT(11), OUT `flightNum` VARCHAR(10), OUT `flightDep` VARCHAR(50), OUT `flightDes` VARCHAR(50), OUT `flightDepTime` DATETIME, OUT `flightDesTime` DATETIME)   BEGIN
+	SELECT flight_number, departure, destination, departure_time, arrival_time INTO 
+    flightNum, flightDep, flightDes, flightDepTime, flightDesTime FROM flights WHERE flight_id = flightId;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getPassenger` (IN `passId` INT(11), OUT `passName` VARCHAR(50), OUT `passEmail` VARCHAR(100), OUT `passPhone` VARCHAR(10))   BEGIN
+	SELECT name, email, phone INTO passName, passEmail, passPhone 
+    FROM passengers INNER JOIN reservations ON reservations.passenger_id = passengers.passenger_id 
+    WHERE passengers.passenger_id = passId AND reservations.status = 'CONFIRMED' LIMIT 1;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getPayment` (IN `flightId` INT(11), IN `passId` INT(11), OUT `bill` DECIMAL(10,2), OUT `date` DATETIME)   BEGIN
+	SELECT amount, payment_time INTO bill, date FROM payments
+    WHERE passenger_id = passId AND flight_id = flightId AND payments.status = 'CONFIRMED';
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -66,18 +88,18 @@ CREATE TABLE `flights` (
 --
 
 INSERT INTO `flights` (`flight_id`, `flight_number`, `flight_type`, `departure`, `destination`, `departure_time`, `arrival_time`, `total_seats`, `available_seats`, `price`, `admin_id`) VALUES
-(1, 'SG160', 'DMST', 'AHMEDABAD', 'DELHI', '2025-07-21 02:00:00', '2025-07-21 03:45:00', 80, 80, 4400.00, 1),
-(2, 'SG9232', 'DMST', 'AHMEDABAD', 'DELHI', '2025-07-22 06:10:00', '2025-07-22 07:45:00', 75, 75, 3500.00, 1),
-(3, 'SG163', 'DMST', 'DELHI', 'AHMEDABAD', '2025-07-21 20:50:00', '2025-07-21 22:40:00', 70, 70, 4205.00, 1),
-(4, 'SG9213', 'DMST', 'DELHI', 'AHMEDABAD', '2025-07-22 12:30:00', '2025-07-22 22:40:00', 75, 75, 3400.00, 1),
-(5, 'SG1081', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-07-21 09:30:00', '2025-07-21 10:50:00', 70, 70, 3100.00, 1),
-(6, 'SG1082', 'DMST', 'MUMBAI', 'AHMEDABAD', '2025-07-22 15:25:00', '2025-07-22 16:55:00', 80, 80, 3500.00, 1),
-(7, 'SG15', 'INRNL', 'AHMEDABAD', 'DUBAI', '2025-07-22 16:35:00', '2025-07-22 18:25:00', 160, 160, 10450.00, 2),
-(8, 'SG16', 'INRNL', 'DUBAI', 'AHMEDABAD', '2025-07-22 19:25:00', '2025-07-22 23:45:00', 165, 165, 11045.00, 2),
-(9, 'AI810', 'INRNL', 'AHMEDABAD', 'TORONTO', '2025-07-22 20:20:00', '2025-07-23 10:50:00', 307, 307, 103541.00, 2),
-(10, 'AI188', 'INRNL', 'TORONTO', 'AHMEDABAD', '2025-07-23 13:10:00', '2025-07-24 19:40:00', 310, 310, 118128.00, 2),
-(11, 'AI2494', 'INRNL', 'AHMEDABAD', 'NEW YORK', '2025-07-23 20:30:00', '2025-07-24 07:55:00', 310, 310, 134520.00, 2),
-(12, 'AI144', 'INRNL', 'NEW YORK', 'AHMEDABAD', '2025-07-23 11:30:00', '2025-07-24 16:25:00', 305, 305, 174909.00, 2);
+(1, 'SG160', 'DMST', 'AHMEDABAD', 'DELHI', '2025-07-26 02:00:00', '2025-07-26 03:45:00', 80, 80, 4400.00, 1),
+(2, 'SG9232', 'DMST', 'AHMEDABAD', 'DELHI', '2025-07-27 06:10:00', '2025-07-27 07:45:00', 75, 75, 3500.00, 1),
+(3, 'SG163', 'DMST', 'DELHI', 'AHMEDABAD', '2025-07-26 20:50:00', '2025-07-26 22:40:00', 70, 70, 4205.00, 1),
+(4, 'SG9213', 'DMST', 'DELHI', 'AHMEDABAD', '2025-07-27 12:30:00', '2025-07-27 22:40:00', 75, 75, 3400.00, 1),
+(5, 'SG1081', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-07-26 09:30:00', '2025-07-26 10:50:00', 70, 70, 3100.00, 1),
+(6, 'SG1082', 'DMST', 'MUMBAI', 'AHMEDABAD', '2025-07-27 15:25:00', '2025-07-27 16:55:00', 80, 80, 3500.00, 1),
+(7, 'SG15', 'INRNL', 'AHMEDABAD', 'DUBAI', '2025-07-27 16:35:00', '2025-07-27 18:25:00', 160, 160, 10450.00, 2),
+(8, 'SG16', 'INRNL', 'DUBAI', 'AHMEDABAD', '2025-07-27 19:25:00', '2025-07-27 23:45:00', 165, 165, 11045.00, 2),
+(9, 'AI810', 'INRNL', 'AHMEDABAD', 'TORONTO', '2025-07-27 20:20:00', '2025-07-28 10:50:00', 307, 307, 103541.00, 2),
+(10, 'AI188', 'INRNL', 'TORONTO', 'AHMEDABAD', '2025-07-28 13:10:00', '2025-07-29 19:40:00', 310, 310, 118128.00, 2),
+(11, 'AI2494', 'INRNL', 'AHMEDABAD', 'NEW YORK', '2025-07-28 20:30:00', '2025-07-29 07:55:00', 310, 310, 134520.00, 2),
+(12, 'AI144', 'INRNL', 'NEW YORK', 'AHMEDABAD', '2025-07-28 11:30:00', '2025-07-29 16:25:00', 305, 305, 174909.00, 2);
 
 -- --------------------------------------------------------
 
@@ -87,9 +109,9 @@ INSERT INTO `flights` (`flight_id`, `flight_number`, `flight_type`, `departure`,
 
 CREATE TABLE `passengers` (
   `passenger_id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
+  `name` varchar(50) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `phone` varchar(15) NOT NULL,
+  `phone` varchar(10) NOT NULL,
   `password` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -115,17 +137,57 @@ INSERT INTO `passengers` (`passenger_id`, `name`, `email`, `phone`, `password`) 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `payments`
+--
+
+CREATE TABLE `payments` (
+  `payment_id` int(11) NOT NULL,
+  `passenger_id` int(11) NOT NULL,
+  `flight_id` int(11) NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `payment_time` datetime DEFAULT current_timestamp(),
+  `status` varchar(20) NOT NULL DEFAULT 'CONFIRMED'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`payment_id`, `passenger_id`, `flight_id`, `amount`, `payment_time`, `status`) VALUES
+(1, 2, 2, 7000.00, '2025-07-24 22:42:34', 'REFUNDED'),
+(2, 2, 2, 3500.00, '2025-07-24 22:43:37', 'REFUNDED');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `reports`
 --
 
 CREATE TABLE `reports` (
   `report_id` int(11) NOT NULL,
-  `flight_id` int(11) NOT NULL,
-  `report_date` date NOT NULL,
-  `revenue` decimal(10,2) NOT NULL,
-  `occupancy_rate` decimal(5,2) NOT NULL,
-  `passenger_count` int(11) NOT NULL
+  `flight_id` int(11) DEFAULT NULL,
+  `seats_booked` int(11) DEFAULT NULL,
+  `revenue` decimal(10,2) DEFAULT NULL,
+  `report_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reports`
+--
+
+INSERT INTO `reports` (`report_id`, `flight_id`, `seats_booked`, `revenue`, `report_date`) VALUES
+(1, 1, 0, 0.00, '2025-07-24 22:12:44'),
+(2, 2, 0, 0.00, '2025-07-24 22:42:34'),
+(3, 3, 0, 0.00, '2025-07-24 22:08:02'),
+(4, 4, 0, 0.00, '2025-07-22 22:28:50'),
+(5, 5, 0, 0.00, '2025-07-22 22:29:21'),
+(6, 6, 0, 0.00, '2025-07-22 22:29:21'),
+(7, 7, 0, 0.00, '2025-07-22 22:36:31'),
+(8, 8, 0, 0.00, '2025-07-22 22:29:57'),
+(9, 9, 0, 0.00, '2025-07-22 22:30:48'),
+(10, 10, 0, 0.00, '2025-07-22 22:30:48'),
+(11, 11, 0, 0.00, '2025-07-22 22:31:44'),
+(12, 12, 0, 0.00, '2025-07-22 22:31:44');
 
 -- --------------------------------------------------------
 
@@ -141,6 +203,15 @@ CREATE TABLE `reservations` (
   `reservation_date` datetime DEFAULT current_timestamp(),
   `status` enum('CONFIRMED','CANCELLED') DEFAULT 'CONFIRMED'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reservations`
+--
+
+INSERT INTO `reservations` (`reservation_id`, `flight_id`, `passenger_id`, `seat_number`, `reservation_date`, `status`) VALUES
+(1, 2, 2, '42C', '2025-07-24 22:42:09', 'CANCELLED'),
+(2, 2, 2, '52C', '2025-07-24 22:42:09', 'CANCELLED'),
+(3, 2, 2, '55E', '2025-07-24 22:42:09', 'CANCELLED');
 
 --
 -- Indexes for dumped tables
@@ -166,6 +237,14 @@ ALTER TABLE `flights`
 ALTER TABLE `passengers`
   ADD PRIMARY KEY (`passenger_id`),
   ADD UNIQUE KEY `email` (`email`);
+
+--
+-- Indexes for table `payments`
+--
+ALTER TABLE `payments`
+  ADD PRIMARY KEY (`payment_id`),
+  ADD KEY `passenger_id` (`passenger_id`),
+  ADD KEY `flight_id` (`flight_id`);
 
 --
 -- Indexes for table `reports`
@@ -205,16 +284,22 @@ ALTER TABLE `passengers`
   MODIFY `passenger_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
+-- AUTO_INCREMENT for table `payments`
+--
+ALTER TABLE `payments`
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
 -- AUTO_INCREMENT for table `reports`
 --
 ALTER TABLE `reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -225,6 +310,13 @@ ALTER TABLE `reservations`
 --
 ALTER TABLE `flights`
   ADD CONSTRAINT `flights_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `admins` (`admin_id`);
+
+--
+-- Constraints for table `payments`
+--
+ALTER TABLE `payments`
+  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`passenger_id`) REFERENCES `passengers` (`passenger_id`),
+  ADD CONSTRAINT `payments_ibfk_2` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`flight_id`);
 
 --
 -- Constraints for table `reports`
