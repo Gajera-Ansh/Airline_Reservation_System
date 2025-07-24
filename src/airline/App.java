@@ -260,7 +260,26 @@ public class App {
                 }
 //              ================================== Cancel a Reservation ==================================
                 case 3 -> {
-                    break;
+                    System.out.print("\nEnter your full name: ");
+                    sc.nextLine();
+                    String name = sc.nextLine().trim();
+                    if (!name.matches("^[a-zA-Z\\s]+$")) {
+                        System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
+                        continue;
+                    }
+                    System.out.print("Enter flight ID: ");
+                    int flightId = sc.nextInt();
+                    if (flightId < 0) {
+                        System.out.println(red + "\nInvalid flight ID! Please enter a positive number." + reset);
+                        continue;
+                    }
+                    if (ReservationDAO.viewReservations(name, flightId)) {
+                        if(ReservationDAO.cancelReservation(name, flightId)) {
+                            continue;
+                        } else {
+                            System.out.println(red + "\nFailed to cancel reservation. Please try again." + reset);
+                        }
+                    }
                 }
 //              ================================== Return to Main Menu ==================================
                 case 4 -> {

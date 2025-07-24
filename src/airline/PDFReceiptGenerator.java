@@ -50,7 +50,7 @@ public class PDFReceiptGenerator {
         document.add(new Paragraph(" "));
 
         // get reservation details
-        String q3 = "SELECT * FROM reservations WHERE flight_id = " + flight_id + " AND passenger_id = " + passenger_id;
+        String q3 = "SELECT * FROM reservations WHERE flight_id = " + flight_id + " AND passenger_id = " + passenger_id + " AND status = 'CONFIRMED'";
         PreparedStatement p3 = DBUtil.con.prepareStatement(q3);
         ResultSet rs3 = p3.executeQuery();
         document.add(new Paragraph("Reservation Details", subtitleFont));

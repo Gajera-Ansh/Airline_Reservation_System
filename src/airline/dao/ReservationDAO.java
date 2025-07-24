@@ -3,11 +3,13 @@ package airline.dao;
 import airline.App;
 import airline.PDFReceiptGenerator;
 import airline.ds.ArrayList;
+import airline.model.Passenger;
 import airline.util.DBUtil;
 import airline.ds.HashMap;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
+import javax.swing.plaf.nimbus.State;
 import java.io.*;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -148,11 +150,11 @@ public class ReservationDAO {
         return seatNum;
     }
 
-    public static void viewReservations(String passengerName, int flightId) throws Exception {
+    public static boolean viewReservations(String passengerName, int flightId) throws Exception {
 
-        //
-        String sql = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE passengers.name = ? AND reservations.flight_id = ?";
-        PreparedStatement pst = con.prepareStatement(sql);
+        // Query to get reservations details for the given passenger name and flight ID
+        String sql = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE passengers.name = ? AND reservations.flight_id = ? AND reservations.status = 'CONFIRMED'";
+        PreparedStatement pst = DBUtil.con.prepareStatement(sql);
         pst.setString(1, passengerName);
         pst.setInt(2, flightId);
         ResultSet rs = pst.executeQuery();
@@ -168,7 +170,7 @@ public class ReservationDAO {
 
             // Get flight details
             String sql1 = "CALL getFlight(?, ?, ?, ?, ?, ?)";
-            CallableStatement pst1 = con.prepareCall(sql1);
+            CallableStatement pst1 = DBUtil.con.prepareCall(sql1);
             pst1.setInt(1, flightId);
             pst1.executeQuery();
             System.out.println("Name: " + passengerName);
@@ -181,18 +183,7 @@ public class ReservationDAO {
                 passId = crs.getInt("passenger_id"); // Get passenger ID for payment and PDF generation
                 System.out.println("Reservation ID: " + crs.getInt("reservation_id"));
                 System.out.println("Seat Number: " + crs.getString("seat_number"));
-
-                // Handle different types of date objects
-                Object dateObj = crs.getObject("reservation_date");
-                Timestamp reservationDate;
-                if (dateObj instanceof LocalDateTime) {
-                    reservationDate = Timestamp.valueOf((LocalDateTime) dateObj);
-                } else if (dateObj instanceof Timestamp) {
-                    reservationDate = (Timestamp) dateObj;
-                } else {
-                    throw new SQLException("Unsupported datetime type: " + dateObj.getClass().getName());
-                }
-                System.out.println("Reservation Date: " + reservationDate.toLocalDateTime() + "\n");
+                System.out.println("Reservation Date: " + crs.getString("reservation_date") + "\n");
             }
 
             // Ask user if they want to download the PDF receipt
@@ -201,8 +192,136 @@ public class ReservationDAO {
             if (choice == 'y') {
                 PDFReceiptGenerator.generateReceipt(flightId, passId, seats);
             }
+            return true;
         } else {
             System.out.println(App.red + "\nNo reservations found for the given passenger name and flight ID." + App.reset);
+            return false;
         }
+    }
+
+    public static boolean cancelReservation(String name, int flightId) throws Exception {
+        System.out.print("\nDo you want to cancel all the reservations for this flight? (y/n): ");
+        char choice = sc.next().trim().toLowerCase().charAt(0);
+        if (choice == 'y') {
+            con.setAutoCommit(false);
+
+            int passId = 0;
+            // Get passenger ID based on the name
+            String query = "SELECT passenger_id FROM passengers WHERE name = '" + name + "'";
+            Statement st = con.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            if (rs.next()) {
+                passId = rs.getInt(1);
+            }
+
+            // Update reservations to 'CANCELLED' status for the given passenger and flight
+            String sql = "UPDATE reservations SET status = 'CANCELLED' WHERE passenger_id = ? AND flight_id = ? AND status = 'CONFIRMED'";
+            PreparedStatement pst = con.prepareStatement(sql);
+            pst.setInt(1, passId);
+            pst.setInt(2, flightId);
+            int r = pst.executeUpdate();
+
+            // Update available seats in the flights table
+            String sql1 = "UPDATE flights SET available_seats = available_seats + " + r + " WHERE flight_id = " + flightId;
+            st = con.createStatement();
+            st.executeUpdate(sql1);
+
+            // Calculate the total price for the cancelled reservations
+            String sql2 = "SELECT price FROM flights WHERE flight_id = " + flightId;
+            ResultSet rs1 = st.executeQuery(sql2);
+            double price = 0;
+            if (rs1.next()) {
+                price = rs1.getDouble(1);
+            }
+            price *= r;
+
+            // Update the reports table with the cancelled reservations
+            String sql3 = "UPDATE reports SET seats_booked = seats_booked - " + r + ", revenue = revenue - " + price + "   WHERE flight_id = " + flightId;
+            st.executeUpdate(sql3);
+
+            // Update the payments table to reflect the cancellation
+            String sql4 = "UPDATE payments SET status = 'REFUNDED' WHERE passenger_id = ? AND flight_id = ? AND status = 'CONFIRMED'";
+            PreparedStatement pst4 = con.prepareStatement(sql4);
+            pst4.setInt(1, passId);
+            pst4.setInt(2, flightId);
+            pst4.executeUpdate();
+            con.commit(); // Commit the transaction
+
+            System.out.println(App.green + "\nAll reservations cancelled successfully." + App.reset);
+            return true;
+
+        } else if (choice == 'n') {
+            con.setAutoCommit(false);
+
+            System.out.print("\nDo you want to cancel a specific reservation? (y/n): ");
+            char choice1 = sc.next().trim().toLowerCase().charAt(0);
+            if (choice1 == 'y') {
+                System.out.print("\nEnter the reservation ID to cancel: ");
+                int reservationId = sc.nextInt();
+
+                int passId = 0;
+                // Get passenger ID based on the name
+                String query = "SELECT passenger_id FROM passengers WHERE name = '" + name + "'";
+                Statement st = con.createStatement();
+                ResultSet rs = st.executeQuery(query);
+                if (rs.next()) {
+                    passId = rs.getInt(1);
+                }
+
+                // Update the specific reservation to 'CANCELLED' status
+                String sql = "UPDATE reservations SET status = 'CANCELLED' WHERE reservation_id = ? AND passenger_id = ? AND flight_id = ? AND status = 'CONFIRMED'";
+                PreparedStatement pst = con.prepareStatement(sql);
+                pst.setInt(1, reservationId);
+                pst.setInt(2, passId);
+                pst.setInt(3, flightId);
+                pst.executeUpdate();
+                int r = pst.executeUpdate();
+
+                // Update available seats in the flights table
+                String sql1 = "UPDATE flights SET available_seats = available_seats + 1 WHERE flight_id = ?";
+                PreparedStatement pst1 = con.prepareStatement(sql1);
+                pst1.setInt(1, flightId);
+                pst1.executeUpdate();
+
+                // Calculate the price for the cancelled reservation
+                String sql2 = "SELECT price FROM flights WHERE flight_id = " + flightId;
+                ResultSet rs1 = st.executeQuery(sql2);
+                double price = 0;
+                if (rs1.next()) {
+                    price = rs1.getDouble(1);
+                }
+
+                // Update the reports table with the cancelled reservation
+                String sql3 = "UPDATE reports SET seats_booked = seats_booked - 1, revenue = revenue - " + price + " WHERE flight_id = " + flightId;
+                st.executeUpdate(sql3);
+
+                // Update the payments table to reflect the cancellation
+                String sql4 = "UPDATE payments SET amount = amount - ? WHERE passenger_id = ? AND flight_id = ? AND status = 'CONFIRMED'";
+                PreparedStatement pst4 = con.prepareStatement(sql4);
+                pst4.setDouble(1, price);
+                pst4.setInt(2, passId);
+                pst4.setInt(3, flightId);
+                pst4.executeUpdate();
+
+                String sql5 = "INSERT INTO payments (passenger_id, flight_id, amount, status) VALUES (?, ?, ?, 'REFUNDED')";
+                PreparedStatement pst5 = con.prepareStatement(sql5);
+                pst5.setInt(1, passId);
+                pst5.setInt(2, flightId);
+                pst5.setDouble(3, price);
+                pst5.executeUpdate();
+                con.commit(); // Commit the transaction
+
+                System.out.println(App.green + "\nReservation cancelled successfully for Reservation ID " + reservationId + App.reset);
+                PDFReceiptGenerator.generateReceipt(flightId, passId, r); // Generate PDF receipt for the reservation update
+                return true;
+            } else if (choice1 == 'n') {
+                System.out.println(App.red + "\nReservation cancellation aborted." + App.reset);
+            } else {
+                System.out.println(App.red + "\nInvalid choice. Reservation cancellation aborted." + App.reset);
+            }
+        } else {
+            System.out.println(App.red + "\nInvalid choice. Reservation cancellation aborted." + App.reset);
+        }
+        return false;
     }
 }
