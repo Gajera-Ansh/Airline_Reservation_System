@@ -16,6 +16,7 @@ public class App {
     public static String red = "\u001B[31m";
     public static String green = "\u001B[32m";
     public static String reset = "\u001B[0m";
+
     public static Scanner sc = new Scanner(System.in);
     public static DBUtil dbUtil = new DBUtil();
     public static FlightDAO flightDAO = new FlightDAO();
@@ -27,6 +28,7 @@ public class App {
         System.out.println("\n===============================================");
         System.out.println("    AIRLINE RESERVATION MANAGEMENT SYSTEM     ");
         System.out.println("===============================================\n");
+
     }
 
     public static void main(String[] args) throws Exception {
