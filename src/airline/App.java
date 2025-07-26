@@ -38,6 +38,7 @@ public class App {
             System.out.println("2. Admin Login");
             System.out.println("3. Exit System");
             System.out.print("Enter choice: ");
+
             switch (sc.nextInt()) {
 //                =================================== Passenger Login ==================================
                 case 1 -> {
