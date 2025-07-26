@@ -28,7 +28,6 @@ public class App {
         System.out.println("\n===============================================");
         System.out.println("    AIRLINE RESERVATION MANAGEMENT SYSTEM     ");
         System.out.println("===============================================\n");
-
     }
 
     public static void main(String[] args) throws Exception {
@@ -189,7 +188,7 @@ public class App {
             System.out.println("5. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
-//              ================================== Make a Reservation ==================================
+//              ================================Make== Make a Reservation ==================================
                 case 1 -> {
                     System.out.print("\nEnter departure: ");
                     sc.nextLine();
@@ -277,7 +276,7 @@ public class App {
                         continue;
                     }
                     if (ReservationDAO.viewReservations(name, flightId)) {
-                        if(ReservationDAO.cancelReservation(name, flightId)) {
+                        if (ReservationDAO.cancelReservation(name, flightId)) {
                             continue;
                         } else {
                             System.out.println(red + "\nFailed to cancel reservation. Please try again." + reset);
