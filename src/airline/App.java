@@ -46,7 +46,7 @@ public class App {
                 }
 //                =================================== Admin Login ==================================
                 case 2 -> {
-
+                    adminLogin();
                     break;
                 }
 //                =================================== Exit System ==================================
@@ -62,13 +62,152 @@ public class App {
         }
     }
 
+    public static void adminLogin() throws Exception {
+        ArrayList<Admin> admins = AdminDAO.getAdmins();
+        System.out.println("\n===== ADMIN LOGIN =====");
+        System.out.print("Enter Username: ");
+        String username = sc.next().trim();
+        System.out.print("Enter Password: ");
+        String password = sc.next().trim();
+        boolean flag = true;
+        for (int i = 0; i < admins.size(); i++) {
+            if (admins.get(i).getUsername().equalsIgnoreCase(username) && admins.get(i).getPassword().equals(password)) {
+                flag = false;
+                System.out.println(green + "\nLogin successful!" + reset);
+                adminMenu(admins.get(i).getAdminId());
+                return;
+            }
+        }
+        if (flag) {
+            System.out.println(red + "\nInvalid username or password!" + reset);
+            return;
+        }
+    }
+
+    public static void adminMenu(int adminId) throws Exception {
+        while (true) {
+            ArrayList<Flight> flights = FlightDAO.getFlight();
+            System.out.println("\n===== ADMINISTRATOR MENU =====");
+            System.out.println("1. Add New Flight");
+            System.out.println("2. Remove Flight");
+            System.out.println("3. View All Flights");
+            System.out.println("4. Update Flight Information");
+            System.out.println("5. View Flight Reservations");
+            System.out.println("6. View Passenger List");
+            System.out.println("7. Generate Flight Report");
+            System.out.println("8. Return to previous Menu");
+            System.out.println("9. Exit System");
+            System.out.print("Enter choice: ");
+            switch (sc.nextInt()) {
+//              ================================== Add New Flight ==================================
+                case 1 -> {
+                    System.out.print("\nEnter flight number: ");
+                    String fnumber = sc.next().trim().toUpperCase();
+                    if (fnumber.matches("^[A-Z]{2,3}\\d{1,4}$")) {
+                        System.out.print("Enter departure: ");
+                        String departure = sc.next().trim().toUpperCase();
+                        if (departure.matches("^[a-zA-Z\\s]+$")) {
+                            System.out.print("Enter destination: ");
+                            String destination = sc.next().trim().toUpperCase();
+                            if (destination.matches("^[a-zA-Z\\s]+$")) {
+                                System.out.print("Enter departure time (yyyy-MM-dd HH:mm:ss): ");
+                                sc.nextLine();
+                                String departureTime = sc.nextLine().trim();
+                                if (departureTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                                    System.out.print("Enter arrival time (yyyy-MM-dd HH:mm:ss): ");
+                                    String arrivalTime = sc.nextLine().trim();
+                                    if (arrivalTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                                        System.out.print("Enter total seats: ");
+                                        int totalSeats = sc.nextInt();
+                                        if (totalSeats > 0) {
+                                            System.out.print("Enter price: ");
+                                            double price = sc.nextDouble();
+                                            if (price > 0) {
+                                                String fType = "";
+                                                if (adminId == 1) {
+                                                    fType = "DMST";
+                                                } else {
+                                                    fType = "INRNL";
+                                                }
+                                                Flight newFlight = new Flight(0, fnumber, fType, departure, destination, departureTime, arrivalTime, totalSeats, totalSeats, price, adminId);
+                                                if (FlightDAO.addFlight(newFlight)) {
+                                                    System.out.println(green + "\nFlight added successfully!" + reset);
+                                                    continue;
+                                                } else {
+                                                    System.out.println(red + "\nFailed to add flight. Please try again." + reset);
+                                                    continue;
+                                                }
+                                            } else {
+                                                System.out.println(red + "\nInvalid price! Please enter a positive number." + reset);
+                                                continue;
+                                            }
+                                        } else {
+                                            System.out.println(red + "\nInvalid total seats! Please enter a positive number." + reset);
+                                            continue;
+                                        }
+                                    } else {
+                                        System.out.println(red + "\nInvalid arrival time format! Please use yyyy-MM-dd HH:mm:ss." + reset);
+                                        continue;
+                                    }
+                                } else {
+                                    System.out.println(red + "\nInvalid departure time format! Please use yyyy-MM-dd HH:mm:ss." + reset);
+                                    continue;
+                                }
+                            } else {
+                                System.out.println(red + "\nInvalid destination! Please use only letters and spaces." + reset);
+                                continue;
+                            }
+                        } else {
+                            System.out.println(red + "\nInvalid departure! Please use only letters and spaces." + reset);
+                            continue;
+                        }
+                    } else {
+                        System.out.println(red + "\nInvalid flight number! Please use the format ABC1234." + reset);
+                        continue;
+                    }
+                }
+//              ================================== Remove Flight ==================================
+                case 2 -> {
+                }
+//              ================================== View All Flights ==================================
+                case 3 -> {
+                }
+//              ================================== Update Flight Information ==========================
+                case 4 -> {
+                }
+//              ================================== View Flight Reservations ==========================
+                case 5 -> {
+                }
+//              ================================== View Passenger List ==============================
+                case 6 -> {
+                }
+//              ================================== Generate Flight Report ==========================
+                case 7 -> {
+                }
+//              ================================== Return to Main Menu ==========================
+                case 8 -> {
+                    return;
+                }
+//              ================================== Exit System ==================================
+                case 9 -> {
+                    System.out.println(red + "\nExiting the system\n" + reset);
+                    System.exit(0);
+                }
+//              ================================== Invalid Choice ==============================
+                default -> {
+                    System.out.println(red + "\nInvalid choice! Please try again." + reset);
+                }
+            }
+        }
+    }
+
     public static void passengerLogin() throws Exception {
         while (true) {
             ArrayList<Passenger> passengers = PassengerDAO.getPassengers();
             System.out.println("\n===== PASSENGER LOGIN =====");
             System.out.println("1. Login via Email and Password");
             System.out.println("2. Register as New Passenger");
-            System.out.println("3. Return to Main Menu");
+            System.out.println("3. Return to previous Menu");
             System.out.println("4. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
@@ -184,11 +323,11 @@ public class App {
             System.out.println("1. Make a Reservation");
             System.out.println("2. View Reservations");
             System.out.println("3. Cancel a Reservation");
-            System.out.println("4. Return to Main Menu");
+            System.out.println("4. Return to previous Menu");
             System.out.println("5. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
-//              ================================Make== Make a Reservation ==================================
+//              ================================ Make a Reservation ==================================
                 case 1 -> {
                     System.out.print("\nEnter departure: ");
                     sc.nextLine();

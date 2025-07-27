@@ -1,15 +1,17 @@
 package airline.dao;
 
+import airline.App;
 import airline.ds.ArrayList;
 import airline.model.Flight;
 import airline.util.DBUtil;
 
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.time.LocalDate;
+import java.util.Scanner;
 
 public class FlightDAO {
 
+    public static Scanner sc = new Scanner(System.in);
     static {
         try {
             String sql = "UPDATE flights SET departure_time = DATE_ADD(departure_time, INTERVAL 1 DAY), arrival_time = DATE_ADD(arrival_time, INTERVAL 1 DAY)";
@@ -53,5 +55,64 @@ public class FlightDAO {
         } else {
             return null;
         }
+    }
+
+    public static boolean addFlight(Flight flight) throws Exception {
+        // Insert a new flight into the database
+        Connection con = DBUtil.con;
+        con.setAutoCommit(false);
+
+        // Check if a flight with the same flight number already exists
+        String sql = "SELECT * FROM flights WHERE flight_number = '" + flight.getFlight_number() + "'";
+        Statement st = con.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        if(!rs.next()) {
+
+            // If no flight with the same flight number exists, check for duplicate flight details
+            String sql1 = "{CALL checkFlight(?, ?, ?, ?, ?)}";
+            CallableStatement cst = con.prepareCall(sql1);
+            cst.setString(1, flight.getDeparture());
+            cst.setString(2, flight.getDestination());
+            cst.setString(3, flight.getDeparture_time().toString());
+            cst.setString(4, flight.getArrival_time().toString());
+            cst.executeQuery();
+
+            // If no duplicate flight details exist, insert the new flight
+            String flightExists = cst.getString(5);
+            if(flightExists == null || flightExists.equals("0")) {
+
+                // Insert the flight
+                String sql2 = "INSERT INTO flights (flight_number, flight_type, departure, destination, departure_time, arrival_time, total_seats, available_seats, price, admin_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                PreparedStatement pst = con.prepareStatement(sql2);
+                pst.setString(1, flight.getFlight_number());
+                pst.setString(2, flight.getFlight_type());
+                pst.setString(3, flight.getDeparture());
+                pst.setString(4, flight.getDestination());
+                pst.setString(5, flight.getDeparture_time().toString());
+                pst.setString(6, flight.getArrival_time().toString());
+                pst.setInt(7, flight.getTotal_seats());
+                pst.setInt(8, flight.getAvailable_seats());
+                pst.setDouble(9, flight.getPrice());
+                pst.setInt(10, flight.getAdmin_id());
+                pst.executeUpdate();
+
+                // Confirmation about flight addition
+                System.out.print("\nAre you sure you want to add this flight? (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
+                if(choice == 'y') {
+                    con.commit(); // Commit the transaction
+                } else {
+                    con.rollback(); // Rollback the transaction
+                    return false;
+                }
+            } else {
+                System.out.println(App.red+"\nFlight already exists with the same details."+App.reset);
+                return false;
+            }
+        } else {
+            System.out.println(App.red+"\nFlight with this flight number already exists."+App.reset);
+            return false;
+        }
+        return true;
     }
 }
