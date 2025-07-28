@@ -6,6 +6,7 @@ import airline.model.*;
 import airline.util.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.Objects;
@@ -103,25 +104,53 @@ public class App {
                 case 1 -> {
                     System.out.print("\nEnter flight number: ");
                     String fnumber = sc.next().trim().toUpperCase();
+
+                    // Validate flight number format
                     if (fnumber.matches("^[A-Z]{2,3}\\d{1,4}$")) {
                         System.out.print("Enter departure: ");
                         String departure = sc.next().trim().toUpperCase();
+
+                        // Validate departure format
                         if (departure.matches("^[a-zA-Z\\s]+$")) {
                             System.out.print("Enter destination: ");
                             String destination = sc.next().trim().toUpperCase();
+
+                            // Validate destination format
                             if (destination.matches("^[a-zA-Z\\s]+$")) {
                                 System.out.print("Enter departure time (yyyy-MM-dd HH:mm:ss): ");
                                 sc.nextLine();
                                 String departureTime = sc.nextLine().trim();
+                                LocalDateTime depTime = LocalDateTime.parse(departureTime, dateTimeFormatter);
+
+                                // Validate departure time format
                                 if (departureTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+
+                                    // Check if departure time is in the past
+                                    if (depTime.isBefore(LocalDateTime.now())) {
+                                        System.out.println(red + "\nDeparture time cannot be in the past." + reset);
+                                        continue;
+                                    }
                                     System.out.print("Enter arrival time (yyyy-MM-dd HH:mm:ss): ");
                                     String arrivalTime = sc.nextLine().trim();
+
+                                    // Validate arrival time format
                                     if (arrivalTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+
+                                        // Check if it is after departure time
+                                        LocalDateTime arrTime = LocalDateTime.parse(arrivalTime, dateTimeFormatter);
+                                        if (arrTime.isBefore(depTime) || arrTime.isEqual(depTime)) {
+                                            System.out.println(red + "\nArrival time must be after departure time." + reset);
+                                            continue;
+                                        }
                                         System.out.print("Enter total seats: ");
                                         int totalSeats = sc.nextInt();
+
+                                        // Validate total seats
                                         if (totalSeats > 0) {
                                             System.out.print("Enter price: ");
                                             double price = sc.nextDouble();
+
+                                            // Validate price
                                             if (price > 0) {
                                                 String fType = "";
                                                 if (adminId == 1) {
