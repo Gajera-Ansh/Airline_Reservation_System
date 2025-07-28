@@ -197,6 +197,39 @@ public class App {
                 }
 //              ================================== Remove Flight ==================================
                 case 2 -> {
+                    System.out.print("\nEnter flight number to remove: ");
+                    String flightNumber = sc.next().trim();
+                    boolean flightExists = false;
+                    boolean flightNotAccessible = true;
+                    for (int i = 0; i < flights.size(); i++) {
+                        if (flights.get(i).getFlight_number().equalsIgnoreCase(flightNumber)) {
+                            flightExists = true;
+                            if (flights.get(i).getAdmin_id() == adminId) {
+                                flightNotAccessible = false;
+                                // Remove the flight
+                                if (FlightDAO.deleteFlight(flightNumber)) {
+                                    flightExists = true;
+                                    flightNotAccessible = false;
+                                    System.out.println(green + "\nFlight removed successfully!" + reset);
+                                    break;
+                                } else {
+                                    System.out.println(red + "\nFailed to remove flight. Please try again." + reset);
+                                    break;
+                                }
+                            } else {
+                                flightNotAccessible = true;
+                                break;
+                            }
+                        } else {
+                            flightExists = false;
+                            continue;
+                        }
+                    }
+                    if(!flightExists) {
+                        System.out.println(red + "\nFlight not found! Please check the flight number." + reset);
+                    } else if (flightNotAccessible) {
+                        System.out.println(red + "\nYou do not have permission to remove this flight." + reset);
+                    }
                 }
 //              ================================== View All Flights ==================================
                 case 3 -> {
@@ -520,7 +553,8 @@ public class App {
         }
     }
 
-    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws Exception {
+    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws
+            Exception {
         while (true) {
 //            ================================ Check for More Flights ==================================
             ArrayList<Flight> flight = flights;
