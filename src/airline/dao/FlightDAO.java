@@ -6,6 +6,7 @@ import airline.model.Flight;
 import airline.util.DBUtil;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
@@ -131,6 +132,8 @@ public class FlightDAO {
     public static boolean deleteFlight(String flightNumber) throws Exception {
         Connection con = DBUtil.con;
         con.setAutoCommit(false);
+
+        // Get the flight ID based on the flight number
         String query = "SELECT flight_id FROM flights WHERE flight_number = '" + flightNumber + "'";
         Statement st = con.createStatement();
         ResultSet rs = st.executeQuery(query);
@@ -138,11 +141,12 @@ public class FlightDAO {
         if (rs.next()) {
             flightId = rs.getInt("flight_id");
         }
+        rs.close();
 
-        String sql = "SELECT * FROM reservations WHERE flight_id = " + flightId + " AND status = 'CONFIRMED' GROUP BY passenger_id";
+        String sql = "SELECT DISTINCT passenger_id FROM reservations WHERE flight_id = " + flightId + " AND status = 'CONFIRMED'";
         ResultSet rs1 = st.executeQuery(sql);
-        if (rs1.next()) {
-            // If there are no confirmed reservations, delete the flight directly
+        // If there are no confirmed reservations, delete the flight directly
+        if (!rs1.next()) {
             String sql2 = "{CALL updateForRemoveFlight(?)}";
             CallableStatement cst = con.prepareCall(sql2);
             cst.setInt(1, flightId);
@@ -151,42 +155,7 @@ public class FlightDAO {
                 System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
                 char choice = sc.next().trim().toLowerCase().charAt(0);
                 if (choice == 'y') {
-                    con.commit(); // Commit the transaction
-                } else {
-                    con.rollback(); // Rollback the transaction
-                }
-            }
-            return true;
-        } else {
-            String sql2 = "{CALL updateForRemoveFlight(?)}";
-            CallableStatement cst = con.prepareCall(sql2);
-            cst.setInt(1, flightId);
-            int r = cst.executeUpdate();
-            if (r > 0) {
-                System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
-                char choice = sc.next().trim().toLowerCase().charAt(0);
-
-                // If there are confirmed reservations, ask for confirmation before deleting
-                if (choice == 'y') {
-
-                    // Notify passengers about the cancellation
-                    String sql3 = "SELECT DISTINCT p.name FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
-                    ResultSet rs2 = st.executeQuery(sql3);
-                    while (rs2.next()) {
-                        FileWriter fw = new FileWriter("D://" + rs2.getString(1) + "_Cancel.txt");
-                        fw.write("Subject: Flight Cancellation Notice\n\n");
-                        fw.write("Dear " + rs2.getString(1) + ",\n\n");
-                        String sql4 = "{CALL getFlight(?, ?, ?, ?, ?, ?)}";
-                        CallableStatement cst1 = con.prepareCall(sql4);
-                        cst1.setInt(1, flightId);
-                        cst1.executeQuery();
-                        fw.write("We regret to inform you that your flight with flight number " + flightNumber + " from " + cst1.getString("departure") + " to " + cst1.getString("destination") + " on " + cst1.getString("departure_time") + " has been cancelled by the administrator.\n\n");
-                        fw.write("We apologize for any inconvenience this may cause and will process a full refund to your account.\n\n");
-                        fw.write("Thank you for your understanding.\n\n");
-                        fw.write("Best regards,\n\n");
-                        fw.write("Airline Management");
-                        fw.close();
-                    }
+                    System.out.println("\nChanges\n");
                     con.commit(); // Commit the transaction
                     return true;
                 } else {
@@ -194,7 +163,49 @@ public class FlightDAO {
                     return false;
                 }
             }
-            return false;
+        } else { // If there are confirmed reservations, ask for confirmation before deleting
+
+            System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+
+            if (choice == 'y') {
+
+                // Notify passengers about the cancellation
+                String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
+                Statement st1 = con.createStatement();
+                ResultSet rs2 = st1.executeQuery(sql3);
+                while (rs2.next()) {
+                    FileWriter fw = new FileWriter("D://" + rs2.getString(2) + ".txt");
+                    fw.write("Subject: Flight Cancellation Notice\n\n");
+                    fw.write("Dear " + rs2.getString(1) + ",\n\n");
+                    String sql4 = "{CALL getFlight(?, ?, ?, ?, ?, ?)}";
+                    CallableStatement cst1 = con.prepareCall(sql4);
+                    cst1.setInt(1, flightId);
+                    cst1.executeQuery();
+                    fw.write("We regret to inform you that your flight with flight number " + flightNumber + " from " + cst1.getString(3) + " to " + cst1.getString(4) + " on " + cst1.getString(5) + " has been cancelled by the administrator.\n\n");
+                    fw.write("We apologize for any inconvenience this may cause and will process a full refund to your account.\n\n");
+                    fw.write("Thank you for your understanding.\n\n");
+                    fw.write("Best regards,\n\n");
+                    fw.write("Airline Management");
+                    fw.close();
+                }
+
+                String sql5 = "{CALL updateForRemoveFlight(?)}";
+                CallableStatement cst2 = con.prepareCall(sql5);
+                cst2.setInt(1, flightId);
+                int r = cst2.executeUpdate();
+                if (r > 0) {
+                    con.commit(); // Commit the transaction
+                    return true;
+                } else {
+                    con.rollback(); // Rollback the transaction
+                    return false;
+                }
+            } else {
+                con.rollback(); // Rollback the transaction
+                return false;
+            }
         }
+        return false;
     }
 }
