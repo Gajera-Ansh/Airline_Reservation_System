@@ -225,7 +225,7 @@ public class App {
                             continue;
                         }
                     }
-                    if(!flightExists) {
+                    if (!flightExists) {
                         System.out.println(red + "\nFlight not found! Please check the flight number." + reset);
                     } else if (flightNotAccessible) {
                         System.out.println(red + "\nYou do not have permission to remove this flight." + reset);
@@ -233,6 +233,8 @@ public class App {
                 }
 //              ================================== View All Flights ==================================
                 case 3 -> {
+                    // This method is used to view all flights for a specific admin.
+                    AdminDAO.viewAllFlight(adminId);
                 }
 //              ================================== Update Flight Information ==========================
                 case 4 -> {
@@ -553,8 +555,7 @@ public class App {
         }
     }
 
-    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws
-            Exception {
+    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws Exception {
         while (true) {
 //            ================================ Check for More Flights ==================================
             ArrayList<Flight> flight = flights;
@@ -596,10 +597,10 @@ public class App {
             System.out.println("\nSearching for available flights...");
             Thread.sleep(2000);
             System.out.println("\nAvailable Flights:");
-            System.out.printf("\n%-10s %-15s %-15s %-15s %-20s %-20s %-13s %-17s %-10s\n", "Flight ID", "Flight Number", "Departure", "Destination", "Departure Time", "Arrival Time", "Total Seats", "Available Seats", "Price");
-            System.out.println("----------------------------------------------------------------------------------------------------------------------------------------------------");
+            System.out.printf("\n%-10s %-15s %-15s %-15s %-25s %-25s %-13s %-17s %-10s\n", "Flight ID", "Flight Number", "Departure", "Destination", "Departure Time", "Arrival Time", "Total Seats", "Available Seats", "Price");
+            System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------");
             for (int i = 0; i < availableFlights.size(); i++) {
-                System.out.printf("%-10s %-15s %-15s %-15s %-20s %-20s %-13d %-17d ₹%-10.2f\n", availableFlights.get(i).getFlight_id(), availableFlights.get(i).getFlight_number(), availableFlights.get(i).getDeparture(), availableFlights.get(i).getDestination(), availableFlights.get(i).getDeparture_time().format(dateTimeFormatter), availableFlights.get(i).getArrival_time().format(dateTimeFormatter), availableFlights.get(i).getTotal_seats(), availableFlights.get(i).getAvailable_seats(), availableFlights.get(i).getPrice());
+                System.out.printf("%-10s %-15s %-15s %-15s %-25s %-25s %-13d %-17d ₹%-10.2f\n", availableFlights.get(i).getFlight_id(), availableFlights.get(i).getFlight_number(), availableFlights.get(i).getDeparture(), availableFlights.get(i).getDestination(), availableFlights.get(i).getDeparture_time().format(dateTimeFormatter), availableFlights.get(i).getArrival_time().format(dateTimeFormatter), availableFlights.get(i).getTotal_seats(), availableFlights.get(i).getAvailable_seats(), availableFlights.get(i).getPrice());
             }
             return true;
         }
