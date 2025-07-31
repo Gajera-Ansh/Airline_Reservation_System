@@ -5,11 +5,14 @@ import airline.ds.ArrayList;
 import airline.model.Flight;
 import airline.util.DBUtil;
 
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetProvider;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class FlightDAO {
@@ -207,5 +210,162 @@ public class FlightDAO {
             }
         }
         return false;
+    }
+
+    public static boolean updateFlight(String flightNumber) throws Exception {
+        Connection con = DBUtil.con;
+        con.setAutoCommit(false);
+        String sql = "SELECT * from flights WHERE flight_number = '" + flightNumber + "'";
+        Statement st = DBUtil.con.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        int flightId = 0;
+        String departure = null;
+        String destination = null;
+        String depTime = null;
+        String arrTime = null;
+        if (rs.next()) {
+            flightId = rs.getInt(1);
+            departure = rs.getString(4);
+            destination = rs.getString(5);
+            depTime = rs.getString(6);
+            arrTime = rs.getString(7);
+        }
+
+        System.out.print("Enter new Flight number: ");
+        String newFlightNumber = sc.next().trim().toUpperCase();
+
+        String sql1 = "{CALL checkFlight(?, ?, ?, ?, ?)}";
+        CallableStatement cst = DBUtil.con.prepareCall(sql1);
+        cst.setString(1, departure);
+        cst.setString(2, destination);
+
+        System.out.print("Enter new departure time (yyyy-mm-dd hh:mm:ss): ");
+        sc.nextLine();
+        String newDepartureTime = sc.nextLine().trim();
+
+        // Validate the new departure time
+        LocalDateTime departureTime = LocalDateTime.parse(newDepartureTime, App.dateTimeFormatter);
+        if (departureTime.isAfter(LocalDateTime.now())) {
+            cst.setString(3, newDepartureTime);
+        } else {
+            System.out.println(App.red + "\nDeparture time must be in the future." + App.reset);
+            return false;
+        }
+
+        System.out.print("Enter new arrival time (yyyy-mm-dd hh:mm:ss): ");
+        String newArrivalTime = sc.nextLine().trim();
+
+        // Validate the new arrival time
+        LocalDateTime arrivalTime = LocalDateTime.parse(newArrivalTime, App.dateTimeFormatter);
+        if (arrivalTime.isAfter(departureTime)) {
+            cst.setString(4, newArrivalTime);
+        } else {
+            System.out.println(App.red + "\nArrival time must be after departure time." + App.reset);
+            return false;
+        }
+
+        try {
+            cst.executeQuery();
+        } catch (Exception e) {
+            System.out.println(App.red + "\nError checking flight details: " + e.getMessage() + App.reset);
+            return false;
+        }
+
+        System.out.print("Enter new total seats: ");
+        int totalSeats = sc.nextInt();
+
+
+        // Check the total passenger in the flight
+        String query = "SELECT count(*) FROM reservations WHERE flight_id = " + flightId + " AND status = 'CONFIRMED'";
+        ResultSet result = st.executeQuery(query);
+        int bookedSeats = 0;
+        if (result.next()) {
+            bookedSeats = result.getInt(1);
+        }
+        int availableSeats = totalSeats - bookedSeats;
+
+        System.out.print("Enter new price: ");
+        double price = sc.nextDouble();
+
+
+        // Check if the flight already exists with the same details
+        String flightExists = cst.getString(5);
+        if (flightExists == null || flightExists.equals("0")) {
+
+            // Check for confirmed reservations
+            String sql2 = "SELECT DISTINCT passenger_id FROM reservations WHERE flight_id = " + flightId + " AND status = 'CONFIRMED'";
+            ResultSet rs1 = st.executeQuery(sql2);
+
+            CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();
+            crs.populate(rs1);
+
+            // If there are no confirmed reservations, update the flight directly
+            if (!(crs.size()>0)) {
+
+                // Update the flight details
+                String sql3 = "{CALL updateFlight(?, ?, ?, ?, ?, ?, ?)}";
+                CallableStatement cst1 = con.prepareCall(sql3);
+                cst1.setInt(1, flightId);
+                cst1.setString(2, newFlightNumber);
+                cst1.setString(3, newDepartureTime);
+                cst1.setString(4, newArrivalTime);
+                cst1.setInt(5, totalSeats);
+                cst1.setInt(6, availableSeats);
+                cst1.setDouble(7, price);
+                cst1.executeUpdate();
+                System.out.println("\nAre you sure you want to update this flight? (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
+                if (choice == 'y') {
+                    con.commit();
+                    return true;
+                } else {
+                    con.rollback();
+                    return false;
+                }
+            } else {  // If there are confirmed reservations, notify passengers
+                String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
+                ResultSet rs2 = st.executeQuery(sql3);
+                FileWriter fw = null;
+                while(rs2.next()) {
+                    fw = new FileWriter("D://"+rs2.getString(2)+".txt");
+                    fw.write("Subject: Flight Update Notice\n\n");
+                    fw.write("Dear " + rs2.getString(1) + ",\n\n");
+                    fw.write("We regret to inform you that the flight " + flightNumber + " from " + departure + " to " + destination + " on " + depTime + " has been updated by the administrator.\n\n");
+                    fw.write("New Flight Details:\n");
+                    fw.write("Flight Number: " + newFlightNumber + "\n");
+                    fw.write("Departure: " + departure + "\n");
+                    fw.write("Destination: " + destination + "\n");
+                    fw.write("Departure Time: " + newDepartureTime + "\n");
+                    fw.write("Arrival Time: " + newArrivalTime + "\n\n");
+                    fw.write("Thank you for your understanding.\n\n");
+                    fw.write("Best regards,\n");
+                    fw.write("Airline Management");
+                }
+                String sql4 = "{CALL updateFlight(?, ?, ?, ?, ?, ?, ?)}";
+                CallableStatement cst2 = con.prepareCall(sql4);
+                cst2.setInt(1, flightId);
+                cst2.setString(2, newFlightNumber);
+                cst2.setString(3, newDepartureTime);
+                cst2.setString(4, newArrivalTime);
+                cst2.setInt(5, totalSeats);
+                cst2.setInt(6, availableSeats);
+                cst2.setDouble(7, price);
+                cst2.executeUpdate();
+                System.out.println("\nAre you sure you want to update this flight? (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
+                if (choice == 'y') {
+                    con.commit();
+                    fw.close();
+
+                    return true;
+                } else {
+                    con.rollback();
+                    return false;
+                }
+            }
+        } else {
+            System.out.println(App.red + "\nFlight already exists with the same details." + App.reset);
+            return false;
+        }
     }
 }

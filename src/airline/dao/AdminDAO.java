@@ -1,13 +1,22 @@
 package airline.dao;
 
+import airline.App;
 import airline.PDFReceiptGenerator;
 import airline.ds.ArrayList;
 import airline.model.Admin;
 import airline.model.Flight;
 import airline.util.DBUtil;
+import org.apache.commons.io.output.FileWriterWithEncoding;
 
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetProvider;
+import java.io.File;
+import java.io.FileWriter;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class AdminDAO {
@@ -42,16 +51,16 @@ public class AdminDAO {
             System.out.printf("%-10s %-15s %-15s %-15s %-25s %-25s %-13d %-17d ₹%-10.2f\n", rs.getInt(1), rs.getString(2), rs.getString(4), rs.getString(5), rs.getTimestamp(6), rs.getTimestamp(7), rs.getInt(8), rs.getInt(9), rs.getDouble(10));
 
             // Add each flight to the ArrayList
-            flights.add( new Flight(rs.getInt(1), rs.getString(2), rs.getString(3),
+            flights.add(new Flight(rs.getInt(1), rs.getString(2), rs.getString(3),
                     rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7),
                     rs.getInt(8), rs.getInt(9), rs.getDouble(10), rs.getInt(11)));
         }
-        if(flights.size() > 0) {
+        if (flights.size() > 0) {
 
             // Prompt the user to download the flight list as a PDF
             System.out.print("\nYou want to download the PDF of this flight list? (y/n): ");
             char choice = sc.next().trim().toLowerCase().charAt(0);
-            if(choice == 'y') {
+            if (choice == 'y') {
 
                 // Generate the PDF for all flights
                 PDFReceiptGenerator.getAllFlights(flights);

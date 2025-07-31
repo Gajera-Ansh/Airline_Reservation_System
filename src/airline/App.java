@@ -5,6 +5,8 @@ import airline.ds.*;
 import airline.model.*;
 import airline.util.*;
 
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -93,11 +95,10 @@ public class App {
             System.out.println("2. Remove Flight");
             System.out.println("3. View All Flights");
             System.out.println("4. Update Flight Information");
-            System.out.println("5. View Flight Reservations");
-            System.out.println("6. View Passenger List");
-            System.out.println("7. Generate Flight Report");
-            System.out.println("8. Return to previous Menu");
-            System.out.println("9. Exit System");
+            System.out.println("5. View Passenger List");
+            System.out.println("6. Generate Flight Report");
+            System.out.println("7. Return to previous Menu");
+            System.out.println("8. Exit System");
             System.out.print("Enter choice: ");
             switch (sc.nextInt()) {
 //              ================================== Add New Flight ==================================
@@ -238,22 +239,47 @@ public class App {
                 }
 //              ================================== Update Flight Information ==========================
                 case 4 -> {
-                }
-//              ================================== View Flight Reservations ==========================
-                case 5 -> {
+                    System.out.print("\nEnter flight number to update: ");
+                    String flightNumber = sc.next().trim().toUpperCase();
+
+                    String sql = "SELECT * FROM flights WHERE flight_number = '" + flightNumber + "'";
+                    Statement st = DBUtil.con.createStatement();
+                    ResultSet rs = st.executeQuery(sql);
+
+                    // Validate flight number
+                    if(rs.next()) {
+
+                        // Check if the flight belongs to the admin
+                        if(rs.getInt("admin_id") == adminId) {
+
+                            if (FlightDAO.updateFlight(flightNumber)) {
+                                System.out.println(green + "\nFlight updated successfully!" + reset);
+                                continue;
+                            } else {
+                                System.out.println(red + "\nFailed to update flight. Please try again." + reset);
+                                continue;
+                            }
+                        } else {
+                            System.out.println(red + "\nYou do not have permission to update this flight." + reset);
+                            continue;
+                        }
+                    } else {
+                        System.out.println(red + "\nFlight not found! Please check the flight number." + reset);
+                        continue;
+                    }
                 }
 //              ================================== View Passenger List ==============================
-                case 6 -> {
+                case 5 -> {
                 }
 //              ================================== Generate Flight Report ==========================
-                case 7 -> {
+                case 6 -> {
                 }
 //              ================================== Return to Main Menu ==========================
-                case 8 -> {
+                case 7 -> {
                     return;
                 }
 //              ================================== Exit System ==================================
-                case 9 -> {
+                case 8 -> {
                     System.out.println(red + "\nExiting the system\n" + reset);
                     System.exit(0);
                 }
