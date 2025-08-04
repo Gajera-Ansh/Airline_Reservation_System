@@ -10,7 +10,7 @@ import java.io.FileOutputStream;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.time.LocalDateTime;
+import java.sql.Statement;
 
 public class PDFReceiptGenerator {
 
@@ -140,6 +140,53 @@ public class PDFReceiptGenerator {
         PdfPCell cell = new PdfPCell(new Phrase(content, font));
         cell.setPadding(3);
         return cell;
+    }
+
+    public static void passengerPDF(String flightNumber, int flightId) throws Exception {
+        Document document = new Document();
+        String fileName = "D://"+flightNumber+"_passenger_list.pdf";
+        PdfWriter.getInstance(document, new FileOutputStream(fileName));
+        document.open();
+
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 24);
+        Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12);
+        Font contentFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+
+        Paragraph title = new Paragraph("PASSENGER LIST", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(30f);
+        document.add(title);
+
+        PdfPTable table = new PdfPTable(6);
+        table.setWidthPercentage(100);
+        table.setSpacingBefore(20f);
+
+        float[] columnWidths = {1f, 1.2f, 1.2f, 1.8f, 1f, 0.8f};
+        table.setWidths(columnWidths);
+
+        String[] headers = {"Res ID", "Pass ID", "Name", "Email", "Phone", "Seat"};
+        for (String header : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(header, subtitleFont));
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setPadding(3);
+            table.addCell(cell);
+        }
+
+        String sql1 = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE flight_id = " + flightId;
+        Statement st = DBUtil.con.createStatement();
+        ResultSet rs = st.executeQuery(sql1);
+        while(rs.next()) {
+            table.addCell(createCell(String.valueOf(rs.getInt("reservation_id")), contentFont));
+            table.addCell(createCell(String.valueOf(rs.getInt("passenger_id")), contentFont));
+            table.addCell(createCell(rs.getString("name"), contentFont));
+            table.addCell(createCell(rs.getString("email"), contentFont));
+            table.addCell(createCell(rs.getString("phone"), contentFont));
+            table.addCell(createCell(rs.getString("seat_number"), contentFont));
+        }
+
+        document.add(table);
+        document.close();
+        System.out.println("\nPDF generated successfully at: " + App.green + fileName + App.reset);
     }
 }
 

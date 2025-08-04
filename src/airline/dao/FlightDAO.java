@@ -7,8 +7,6 @@ import airline.util.DBUtil;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
-import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;

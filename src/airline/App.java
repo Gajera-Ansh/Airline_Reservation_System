@@ -247,10 +247,10 @@ public class App {
                     ResultSet rs = st.executeQuery(sql);
 
                     // Validate flight number
-                    if(rs.next()) {
+                    if (rs.next()) {
 
                         // Check if the flight belongs to the admin
-                        if(rs.getInt("admin_id") == adminId) {
+                        if (rs.getInt("admin_id") == adminId) {
 
                             if (FlightDAO.updateFlight(flightNumber)) {
                                 System.out.println(green + "\nFlight updated successfully!" + reset);
@@ -270,6 +270,33 @@ public class App {
                 }
 //              ================================== View Passenger List ==============================
                 case 5 -> {
+                    System.out.print("\nEnter flight number to view passenger list: ");
+                    String flightNumber = sc.next().trim().toUpperCase();
+
+                    String sql = "SELECT * FROM flights WHERE flight_number = '" + flightNumber + "'";
+                    Statement st = DBUtil.con.createStatement();
+                    ResultSet rs = st.executeQuery(sql);
+
+                    // Validate flight number
+                    if (rs.next()) {
+
+                        // Check if the flight belongs to the admin
+                        if (rs.getInt("admin_id") == adminId) {
+
+                            if (AdminDAO.viewPassengerList(flightNumber)) {
+                                continue;
+                            } else {
+                                System.out.println(red + "\nNo passengers found" + reset);
+                                continue;
+                            }
+                        } else {
+                            System.out.println(red + "\nYou do not have permission to update this flight." + reset);
+                            continue;
+                        }
+                    } else {
+                        System.out.println(red + "\nFlight not found! Please check the flight number." + reset);
+                        continue;
+                    }
                 }
 //              ================================== Generate Flight Report ==========================
                 case 6 -> {

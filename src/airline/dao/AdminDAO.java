@@ -1,22 +1,15 @@
 package airline.dao;
 
-import airline.App;
 import airline.PDFReceiptGenerator;
 import airline.ds.ArrayList;
 import airline.model.Admin;
 import airline.model.Flight;
 import airline.util.DBUtil;
-import org.apache.commons.io.output.FileWriterWithEncoding;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
-import java.io.File;
-import java.io.FileWriter;
-import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class AdminDAO {
@@ -70,6 +63,45 @@ public class AdminDAO {
             }
         } else {
             return;
+        }
+    }
+
+    public static boolean viewPassengerList(String flightNumber) throws Exception {
+
+        String sql = "SELECT * FROM flights WHERE flight_number = '" + flightNumber + "'";
+        Statement st = DBUtil.con.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        int flightId = 0;
+        if (rs.next()) {
+            flightId = rs.getInt(1);
+        }
+
+        // Get reservation and passenger data who have booked seat
+        String sql1 = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE flight_id = " + flightId;
+        ResultSet rs1 = st.executeQuery(sql1);
+
+        CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();
+        crs.populate(rs1);
+
+        if (crs.size() > 0) {
+
+            // Display passenger list
+            System.out.printf("%-17s %-17s %-20s %-20s %-15s %-15s\n", "\nReservation id", "Passenger id", "Name", "Email", "Phone", "Seat Number");
+            System.out.println("--------------------------------------------------------------------------------------------------------");
+            while (crs.next()) {
+                System.out.printf("%-15s %-15s %-20s %-20s %-15s %-15s\n", crs.getInt("reservation_id"), crs.getInt("passenger_id"), crs.getString("name"), crs.getString("email"), crs.getString("phone"), crs.getString("seat_number"));
+            }
+
+            System.out.print("\nDo you want to download the pdf (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+            if (choice == 'y') {
+                PDFReceiptGenerator.passengerPDF(flightNumber, flightId); // Generate PDF of passenger list
+                return true;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
         }
     }
 }
