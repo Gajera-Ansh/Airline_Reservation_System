@@ -11,6 +11,7 @@ import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 
 public class PDFReceiptGenerator {
 
@@ -24,8 +25,10 @@ public class PDFReceiptGenerator {
         Font subtitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
         Font contentFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
 
-        document.add(new Paragraph("Airline Reservation Ticket", titleFont));
-        document.add(new Paragraph(" "));
+        Paragraph title = new Paragraph("RESERVATION TICKET", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(30f);
+        document.add(title);
 
         // get passenger details
         String q1 = "{CALL getPassenger(?, ?, ?, ?)}";
@@ -118,7 +121,7 @@ public class PDFReceiptGenerator {
         }
 
         // Add flight data to the table
-        for(int i = 0; i < flights.size(); i++) {
+        for (int i = 0; i < flights.size(); i++) {
             table.addCell(createCell(String.valueOf(flights.get(i).getFlight_id()), contentFont));
             table.addCell(createCell(flights.get(i).getFlight_number(), contentFont));
             table.addCell(createCell(flights.get(i).getDeparture(), contentFont));
@@ -144,7 +147,7 @@ public class PDFReceiptGenerator {
 
     public static void passengerPDF(String flightNumber, int flightId) throws Exception {
         Document document = new Document();
-        String fileName = "D://"+flightNumber+"_passenger_list.pdf";
+        String fileName = "D://" + flightNumber + "_passenger_list.pdf";
         PdfWriter.getInstance(document, new FileOutputStream(fileName));
         document.open();
 
@@ -175,7 +178,7 @@ public class PDFReceiptGenerator {
         String sql1 = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE flight_id = " + flightId;
         Statement st = DBUtil.con.createStatement();
         ResultSet rs = st.executeQuery(sql1);
-        while(rs.next()) {
+        while (rs.next()) {
             table.addCell(createCell(String.valueOf(rs.getInt("reservation_id")), contentFont));
             table.addCell(createCell(String.valueOf(rs.getInt("passenger_id")), contentFont));
             table.addCell(createCell(rs.getString("name"), contentFont));
@@ -185,6 +188,36 @@ public class PDFReceiptGenerator {
         }
 
         document.add(table);
+        document.close();
+        System.out.println("\nPDF generated successfully at: " + App.green + fileName + App.reset);
+    }
+
+    public static void generateReport(String flightNumber, int flightId) throws Exception {
+        Document document = new Document();
+        String fileName = "D://" + flightNumber + "_report.pdf";
+        PdfWriter.getInstance(document, new FileOutputStream(fileName));
+        document.open();
+
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 24);
+        Font contentFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+
+        Paragraph title = new Paragraph("FLIGHT REPORT", titleFont);
+        title.setAlignment(Element.ALIGN_CENTER);
+        title.setSpacingAfter(30f);
+        document.add(title);
+
+        // Get data from the report table
+        String sql = "SELECT * FROM reports WHERE flight_id = " + flightId;
+        Statement st = DBUtil.con.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        if (rs.next()) { // Write data into the PDF
+            document.add(new Paragraph("Report ID: " + rs.getInt(1), contentFont));
+            document.add(new Paragraph("Flight ID: " + rs.getInt(2), contentFont));
+            document.add(new Paragraph("Seats Booked: " + rs.getInt(3), contentFont));
+            document.add(new Paragraph("Revenue: " + rs.getDouble(4), contentFont));
+            document.add(new Paragraph("Report updated on: " + rs.getString(5), contentFont));
+            document.add(new Paragraph("Report generated on: " + LocalDateTime.now().format(App.dateTimeFormatter), contentFont));
+        }
         document.close();
         System.out.println("\nPDF generated successfully at: " + App.green + fileName + App.reset);
     }

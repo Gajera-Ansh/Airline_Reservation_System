@@ -3,6 +3,7 @@ package airline.dao;
 import airline.App;
 import airline.PDFReceiptGenerator;
 import airline.ds.ArrayList;
+import airline.model.Flight;
 import airline.model.Passenger;
 import airline.util.DBUtil;
 import airline.ds.HashMap;
@@ -19,6 +20,58 @@ public class ReservationDAO {
     public static Scanner sc = new Scanner(System.in);
     public static Connection con = DBUtil.con;
     public static HashMap<Integer, ArrayList<String>> seatNumbers = new HashMap<>();
+
+    public static void makeAReservation(ArrayList<Flight> flights, Passenger p) throws Exception {
+        while (true) {
+            boolean reservationStatus = false;
+            ArrayList<Flight> flightList = flights;
+//          ================================== Select Flight ==================================
+            System.out.print("\nWant to make a reservation? (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+            if (choice == 'y') {
+                System.out.print("\nEnter flight ID: ");
+                int flightId = sc.nextInt();
+                System.out.print("Enter number of seats to reserve: ");
+                int seats = sc.nextInt();
+//               ================================= Validate Seats ==================================
+                if (seats > 0) {
+                    boolean flag = false;
+//                    ================================ Check Flight ID and Available Seats ==================================
+                    for (int i = 0; i < flightList.size(); i++) {
+                        if (flightList.get(i).getFlight_id() == flightId && flightList.get(i).getAvailable_seats() >= seats) {
+                            flag = false;
+//                           ================================= Add Reservation ==================================
+                            reservationStatus = ReservationDAO.addReservation(flightList.get(i).getFlight_id(), p.getPassenger_id(), seats);
+                            break;
+                        } else {
+                            flag = true;
+                        }
+                    }
+//                   ================================= Invalid Flight ID or Seats ==================================
+                    if (flag) {
+                        System.out.println(App.red + "\nInvalid flight ID or insufficient seats available! Please try again." + App.reset);
+                        continue;
+                    }
+                }
+//                ================================ Invalid Number of Seats ==================================
+                else {
+                    System.out.println(App.red + "\nInvalid number of seats! Please enter a positive number." + App.reset);
+                    continue;
+                }
+            } else if (choice == 'n') {
+                return;
+            } else {
+                System.out.println(App.red + "\nInvalid choice! Please try again." + App.reset);
+                continue;
+            }
+//            ================================ Reservation Confirmation ==================================
+            if (reservationStatus) {
+                return;
+            } else {
+                continue;
+            }
+        }
+    }
 
     public static boolean addReservation(int flightId, int passengerId, int seats) throws Exception {
         con.setAutoCommit(false);
@@ -42,7 +95,7 @@ public class ReservationDAO {
             System.out.print("Confirming reservation for " + seats + " seats for flight ID: " + flightId + "  (y/n): ");
             char choice = sc.next().trim().toLowerCase().charAt(0);
             if (choice == 'y') {
-                if (makePayment(passengerId, flightId, seats)) {
+                if (PaymentDAO.makePayment(passengerId, flightId, seats)) {
                     con.commit();
 
                     // Update available seats in flights table
@@ -79,53 +132,6 @@ public class ReservationDAO {
                 continue;
             }
         }
-    }
-
-    public static boolean makePayment(int passenger_id, int flight_id, int seats) throws Exception {
-//        ========== QR Code Generation ==========
-        FileInputStream fis = new FileInputStream("src/airline/QR.png");
-        FileOutputStream fos = new FileOutputStream("D://QR.png");
-        int i = fis.read();
-
-        while (i != -1) {
-            fos.write(i);
-            i = fis.read();
-        }
-        fos.close();
-        fis.close();
-        File f1 = new File("D://QR.png");
-        System.out.println("\nQR code is generated at " + App.green + f1.getAbsolutePath() + App.reset);
-        System.out.println("\nPlease scan the QR code to make the payment.");
-        System.out.print("\nPress Enter after payment is done.");
-        sc.nextLine(); // Consume the newline character left by previous input
-        sc.nextLine(); // Wait for user to press Enter
-
-//        ========== Password Generation ==========
-        FileWriter fw = new FileWriter("D://pass.txt");
-        int r = (int) (Math.random() * 1000);
-        String pass = r + "";
-        for (int j = 0; j < 5; j++) {
-            char c = (char) ('A' + (int) (Math.random() * 26));
-            pass = pass + c;
-        }
-
-        // Write the password to the file
-        fw.write(pass);
-        fw.close();
-
-        File f2 = new File("D://pass.txt");
-        System.out.print("\nEnter the password (which is print in pass.txt file " + App.green + f2.getAbsolutePath() + App.reset + ") to confirm payment: ");
-        String inputPass = sc.nextLine().trim();
-        if (inputPass.equals(pass)) {
-
-            // Update payment database
-            PaymentDAO.addPayment(passenger_id, flight_id, seats);
-            System.out.println(App.green + "\nPayment successful." + App.reset);
-        } else {
-            System.out.println(App.red + "\nPayment failed. Incorrect password." + App.reset);
-            return false;
-        }
-        return true;
     }
 
     public static String generateSeatNumbers(int flightId) throws Exception {
