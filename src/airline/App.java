@@ -24,7 +24,6 @@ public class App {
     public static DBUtil dbUtil = new DBUtil();
     public static FlightDAO flightDAO = new FlightDAO();
     public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    public static DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
     public static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     static {
@@ -300,6 +299,28 @@ public class App {
                 }
 //              ================================== Generate Flight Report ==========================
                 case 6 -> {
+                    System.out.print("\nEnter flight number to generate flight report: ");
+                    String flightNumber = sc.next().trim().toUpperCase();
+
+                    String sql = "SELECT * FROM flights WHERE flight_number = '" + flightNumber + "'";
+                    Statement st = DBUtil.con.createStatement();
+                    ResultSet rs = st.executeQuery(sql);
+
+                    // Validate flight number
+                    if (rs.next()) {
+
+                        // Check if the flight belongs to the admin
+                        if (rs.getInt("admin_id") == adminId) {
+                            AdminDAO.viewFlightReport(flightNumber);
+                            continue;
+                        } else {
+                            System.out.println(red + "\nYou do not have permission to update this flight." + reset);
+                            continue;
+                        }
+                    } else {
+                        System.out.println(red + "\nFlight not found! Please check the flight number." + reset);
+                        continue;
+                    }
                 }
 //              ================================== Return to Main Menu ==========================
                 case 7 -> {
@@ -488,16 +509,16 @@ public class App {
                     }
 
 //                  ================================ Display Available Flights ==================================
-                    if (!displayAvailableFlights(availableFlights)) {
+                    if (!FlightDAO.displayAvailableFlights(availableFlights)) {
                         continue;
                     }
 
 //                  ================================== More Flights Available ==================================
-                    ArrayList<Flight> moreFlights = moreFlights(departure, destination, flights);
+                    ArrayList<Flight> moreFlights = FlightDAO.moreFlights(departure, destination, flights);
                     availableFlights = moreFlights == null ? availableFlights : moreFlights;
 
 //                   ================================= Make a Reservation ==================================
-                    makeAReservation(availableFlights, p);
+                    ReservationDAO.makeAReservation(availableFlights, p);
                 }
 //              ================================== View Reservations ==================================
                 case 2 -> {
@@ -553,109 +574,6 @@ public class App {
                     System.out.println(red + "\nInvalid choice! Please try again." + reset);
                 }
             }
-        }
-    }
-
-    public static void makeAReservation(ArrayList<Flight> flights, Passenger p) throws Exception {
-        while (true) {
-            boolean reservationStatus = false;
-            ArrayList<Flight> flightList = flights;
-//          ================================== Select Flight ==================================
-            System.out.print("\nWant to make a reservation? (y/n): ");
-            char choice = sc.next().trim().toLowerCase().charAt(0);
-            if (choice == 'y') {
-                System.out.print("\nEnter flight ID: ");
-                int flightId = sc.nextInt();
-                System.out.print("Enter number of seats to reserve: ");
-                int seats = sc.nextInt();
-//               ================================= Validate Seats ==================================
-                if (seats > 0) {
-                    boolean flag = false;
-//                    ================================ Check Flight ID and Available Seats ==================================
-                    for (int i = 0; i < flightList.size(); i++) {
-                        if (flightList.get(i).getFlight_id() == flightId && flightList.get(i).getAvailable_seats() >= seats) {
-                            flag = false;
-//                           ================================= Add Reservation ==================================
-                            reservationStatus = ReservationDAO.addReservation(flightList.get(i).getFlight_id(), p.getPassenger_id(), seats);
-                            break;
-                        } else {
-                            flag = true;
-                        }
-                    }
-//                   ================================= Invalid Flight ID or Seats ==================================
-                    if (flag) {
-                        System.out.println(red + "\nInvalid flight ID or insufficient seats available! Please try again." + reset);
-                        continue;
-                    }
-                }
-//                ================================ Invalid Number of Seats ==================================
-                else {
-                    System.out.println(red + "\nInvalid number of seats! Please enter a positive number." + reset);
-                    continue;
-                }
-            } else if (choice == 'n') {
-                return;
-            } else {
-                System.out.println(red + "\nInvalid choice! Please try again." + reset);
-                continue;
-            }
-//            ================================ Reservation Confirmation ==================================
-            if (reservationStatus) {
-                return;
-            } else {
-                continue;
-            }
-        }
-    }
-
-    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws Exception {
-        while (true) {
-//            ================================ Check for More Flights ==================================
-            ArrayList<Flight> flight = flights;
-            ArrayList<Flight> availableFlights = new ArrayList<>();
-            System.out.print("\nWant to see more flights? (y/n): ");
-            char choice = sc.next().trim().toLowerCase().charAt(0);
-
-            if (choice == 'y') {
-//                ================================ Search for More Flights ==================================
-                for (int i = 0; i < flight.size(); i++) {
-                    boolean matchesRoute = flight.get(i).getDeparture().equalsIgnoreCase(departure) && flight.get(i).getDestination().equalsIgnoreCase(destination);
-
-                    boolean hasAvailableSeats = flight.get(i).getAvailable_seats() > 0;
-
-                    if (matchesRoute && hasAvailableSeats) {
-                        availableFlights.add(flight.get(i));
-                    }
-                }
-//                ================================ Display Available Flights ==================================
-                displayAvailableFlights(availableFlights);
-                return availableFlights;
-            } else if (choice == 'n') {
-                return null;
-            } else {
-                System.out.println(red + "\nInvalid choice! Please try again." + reset);
-                continue;
-            }
-        }
-    }
-
-    public static boolean displayAvailableFlights(ArrayList<Flight> availableFlights) throws Exception {
-//        ================================ No Flights Available ==================================
-        if (availableFlights.size() == 0) {
-            System.out.println(red + "\nNo flights available for the selected criteria." + reset);
-            return false;
-        }
-//        ================================ Display Available Flights ==================================
-        else {
-            System.out.println("\nSearching for available flights...");
-            Thread.sleep(2000);
-            System.out.println("\nAvailable Flights:");
-            System.out.printf("\n%-10s %-15s %-15s %-15s %-25s %-25s %-13s %-17s %-10s\n", "Flight ID", "Flight Number", "Departure", "Destination", "Departure Time", "Arrival Time", "Total Seats", "Available Seats", "Price");
-            System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------");
-            for (int i = 0; i < availableFlights.size(); i++) {
-                System.out.printf("%-10s %-15s %-15s %-15s %-25s %-25s %-13d %-17d ₹%-10.2f\n", availableFlights.get(i).getFlight_id(), availableFlights.get(i).getFlight_number(), availableFlights.get(i).getDeparture(), availableFlights.get(i).getDestination(), availableFlights.get(i).getDeparture_time().format(dateTimeFormatter), availableFlights.get(i).getArrival_time().format(dateTimeFormatter), availableFlights.get(i).getTotal_seats(), availableFlights.get(i).getAvailable_seats(), availableFlights.get(i).getPrice());
-            }
-            return true;
         }
     }
 }

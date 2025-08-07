@@ -62,6 +62,57 @@ public class FlightDAO {
         }
     }
 
+    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws Exception {
+        while (true) {
+//            ================================ Check for More Flights ==================================
+            ArrayList<Flight> flight = flights;
+            ArrayList<Flight> availableFlights = new ArrayList<>();
+            System.out.print("\nWant to see more flights? (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+
+            if (choice == 'y') {
+//                ================================ Search for More Flights ==================================
+                for (int i = 0; i < flight.size(); i++) {
+                    boolean matchesRoute = flight.get(i).getDeparture().equalsIgnoreCase(departure) && flight.get(i).getDestination().equalsIgnoreCase(destination);
+
+                    boolean hasAvailableSeats = flight.get(i).getAvailable_seats() > 0;
+
+                    if (matchesRoute && hasAvailableSeats) {
+                        availableFlights.add(flight.get(i));
+                    }
+                }
+//                ================================ Display Available Flights ==================================
+                displayAvailableFlights(availableFlights);
+                return availableFlights;
+            } else if (choice == 'n') {
+                return null;
+            } else {
+                System.out.println(App.red + "\nInvalid choice! Please try again." + App.reset);
+                continue;
+            }
+        }
+    }
+
+    public static boolean displayAvailableFlights(ArrayList<Flight> availableFlights) throws Exception {
+//        ================================ No Flights Available ==================================
+        if (availableFlights.size() == 0) {
+            System.out.println(App.red + "\nNo flights available for the selected criteria." + App.reset);
+            return false;
+        }
+//        ================================ Display Available Flights ==================================
+        else {
+            System.out.println("\nSearching for available flights...");
+            Thread.sleep(2000);
+            System.out.println("\nAvailable Flights:");
+            System.out.printf("\n%-10s %-15s %-15s %-15s %-25s %-25s %-13s %-17s %-10s\n", "Flight ID", "Flight Number", "Departure", "Destination", "Departure Time", "Arrival Time", "Total Seats", "Available Seats", "Price");
+            System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------");
+            for (int i = 0; i < availableFlights.size(); i++) {
+                System.out.printf("%-10s %-15s %-15s %-15s %-25s %-25s %-13d %-17d ₹%-10.2f\n", availableFlights.get(i).getFlight_id(), availableFlights.get(i).getFlight_number(), availableFlights.get(i).getDeparture(), availableFlights.get(i).getDestination(), availableFlights.get(i).getDeparture_time().format(App.dateTimeFormatter), availableFlights.get(i).getArrival_time().format(App.dateTimeFormatter), availableFlights.get(i).getTotal_seats(), availableFlights.get(i).getAvailable_seats(), availableFlights.get(i).getPrice());
+            }
+            return true;
+        }
+    }
+
     public static boolean addFlight(Flight flight) throws Exception {
         // Insert a new flight into the database
         Connection con = DBUtil.con;

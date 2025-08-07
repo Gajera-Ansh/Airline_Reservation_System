@@ -1,5 +1,6 @@
 package airline.dao;
 
+import airline.App;
 import airline.PDFReceiptGenerator;
 import airline.ds.ArrayList;
 import airline.model.Admin;
@@ -10,6 +11,7 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class AdminDAO {
@@ -103,5 +105,34 @@ public class AdminDAO {
         } else {
             return false;
         }
+    }
+
+    public static void viewFlightReport(String flightNumber) throws Exception {
+        String sql = "SELECT * FROM flights WHERE flight_number = '" + flightNumber + "'";
+        Statement st = DBUtil.con.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+        int flightId = 0;
+        if (rs.next()) {
+            flightId = rs.getInt("flight_id");
+        }
+
+        String sql1 = "SELECT * FROM reports WHERE flight_id = " + flightId;
+        ResultSet rs1 = st.executeQuery(sql1);
+        if (rs1.next()) {
+            System.out.println("\nFlight ID: " + rs1.getInt("flight_id"));
+            System.out.println("Seats Booked: " + rs1.getInt("seats_booked"));
+            System.out.println("Revenue: " + rs1.getDouble("revenue"));
+            System.out.println("Report updated on: " + rs1.getString("report_date"));
+            System.out.println("Report generated on: " + LocalDateTime.now().format(App.dateTimeFormatter));
+        }
+        System.out.print("\nDo you want to download the PDF (y/n): ");
+        char choice = sc.next().trim().toLowerCase().charAt(0);
+        if (choice == 'y') {
+            PDFReceiptGenerator.generateReport(flightNumber, flightId);
+            return;
+        } else {
+            return;
+        }
+
     }
 }

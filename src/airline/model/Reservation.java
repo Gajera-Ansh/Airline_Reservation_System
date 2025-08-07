@@ -18,5 +18,4 @@ public class Reservation {
         this.reservation_date = reservation_date;
         this.status = status;
     }
-
 }
