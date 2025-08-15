@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 24, 2025 at 07:16 PM
+-- Generation Time: Aug 15, 2025 at 06:38 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,11 +20,63 @@ SET time_zone = "+00:00";
 --
 -- Database: `airline_db`
 --
+CREATE DATABASE IF NOT EXISTS `airline_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE `airline_db`;
 
 DELIMITER $$
 --
 -- Procedures
 --
+CREATE DEFINER=`root`@`localhost` PROCEDURE `checkFlight` (IN `user_departure_city` VARCHAR(50), IN `user_destination_city` VARCHAR(50), IN `user_departure_time` DATETIME, IN `user_arrival_time` DATETIME, OUT `FlightNum` VARCHAR(10))   BEGIN
+    -- Initialize output
+    SET FlightNum = NULL;
+
+    -- Check for conflicts at departure city
+    SELECT flight_number
+    INTO FlightNum
+    FROM flights
+    WHERE 
+        (departure = user_departure_city OR destination = user_departure_city)
+        AND (
+            (
+                DATE(user_departure_time) = DATE(departure_time)
+                AND departure_time BETWEEN DATE_SUB(user_departure_time, INTERVAL 10 MINUTE)
+                                      AND DATE_ADD(user_departure_time, INTERVAL 10 MINUTE)
+            )
+            OR
+            (
+                DATE(user_departure_time) = DATE(arrival_time)
+                AND arrival_time BETWEEN DATE_SUB(user_departure_time, INTERVAL 10 MINUTE)
+                                    AND DATE_ADD(user_departure_time, INTERVAL 10 MINUTE)
+            )
+        )
+    LIMIT 1;
+
+    -- If not found in departure check, try destination city
+    IF FlightNum IS NULL THEN
+        SELECT flight_number
+        INTO FlightNum
+        FROM flights
+        WHERE 
+            (departure = user_destination_city OR destination = user_destination_city)
+            AND (
+                (
+                    DATE(user_arrival_time) = DATE(departure_time)
+                    AND departure_time BETWEEN DATE_SUB(user_arrival_time, INTERVAL 10 MINUTE)
+                                          AND DATE_ADD(user_arrival_time, INTERVAL 10 MINUTE)
+                )
+                OR
+                (
+                    DATE(user_arrival_time) = DATE(arrival_time)
+                    AND arrival_time BETWEEN DATE_SUB(user_arrival_time, INTERVAL 10 MINUTE)
+                                        AND DATE_ADD(user_arrival_time, INTERVAL 10 MINUTE)
+                )
+            )
+        LIMIT 1;
+    END IF;
+
+END$$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getFlight` (IN `flightId` INT(11), OUT `flightNum` VARCHAR(10), OUT `flightDep` VARCHAR(50), OUT `flightDes` VARCHAR(50), OUT `flightDepTime` DATETIME, OUT `flightDesTime` DATETIME)   BEGIN
 	SELECT flight_number, departure, destination, departure_time, arrival_time INTO 
     flightNum, flightDep, flightDes, flightDepTime, flightDesTime FROM flights WHERE flight_id = flightId;
@@ -39,6 +91,39 @@ END$$
 CREATE DEFINER=`root`@`localhost` PROCEDURE `getPayment` (IN `flightId` INT(11), IN `passId` INT(11), OUT `bill` DECIMAL(10,2), OUT `date` DATETIME)   BEGIN
 	SELECT amount, payment_time INTO bill, date FROM payments
     WHERE passenger_id = passId AND flight_id = flightId AND payments.status = 'CONFIRMED';
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateFlight` (IN `id` INT(10), IN `newflightNum` VARCHAR(10), IN `newdep_time` DATETIME, IN `newarr_time` DATETIME, IN `newtotal_seat` INT(10), IN `newava_seat` INT(10), IN `newPrice` DOUBLE)   BEGIN
+	UPDATE flights SET flight_number = newflightNum, departure_time = newdep_time, arrival_time = newarr_time,
+    total_seats = newtotal_seat, available_seats = newava_seat, price = newPrice WHERE flight_id = id;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `updateForRemoveFlight` (IN `flightId` INT(11))   BEGIN
+	-- 1. Drop foreign keys 
+ALTER TABLE payments DROP FOREIGN KEY payments_ibfk_2;
+ALTER TABLE reservations DROP FOREIGN KEY reservations_ibfk_1;
+ALTER TABLE reports DROP FOREIGN KEY reports_ibfk_1;
+
+-- 2. Delete related records
+DELETE FROM payments WHERE flight_id = flightId;
+DELETE FROM reservations WHERE flight_id = flightId;
+DELETE FROM reports WHERE flight_id = flightId;
+
+-- 3. Delete the flight
+DELETE FROM flights WHERE flight_id = flightId;
+
+-- 4. Re-add foreign keys with ON DELETE CASCADE (optional)
+ALTER TABLE payments
+  ADD CONSTRAINT payments_ibfk_2
+  FOREIGN KEY (flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE ;
+
+ALTER TABLE reservations
+  ADD CONSTRAINT reservations_ibfk_1
+  FOREIGN KEY (flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE ;
+
+ALTER TABLE reports
+  ADD CONSTRAINT reports_ibfk_1
+  FOREIGN KEY (flight_id) REFERENCES flights(flight_id) ON DELETE CASCADE ;
 END$$
 
 DELIMITER ;
@@ -88,18 +173,23 @@ CREATE TABLE `flights` (
 --
 
 INSERT INTO `flights` (`flight_id`, `flight_number`, `flight_type`, `departure`, `destination`, `departure_time`, `arrival_time`, `total_seats`, `available_seats`, `price`, `admin_id`) VALUES
-(1, 'SG160', 'DMST', 'AHMEDABAD', 'DELHI', '2025-07-26 02:00:00', '2025-07-26 03:45:00', 80, 80, 4400.00, 1),
-(2, 'SG9232', 'DMST', 'AHMEDABAD', 'DELHI', '2025-07-27 06:10:00', '2025-07-27 07:45:00', 75, 75, 3500.00, 1),
-(3, 'SG163', 'DMST', 'DELHI', 'AHMEDABAD', '2025-07-26 20:50:00', '2025-07-26 22:40:00', 70, 70, 4205.00, 1),
-(4, 'SG9213', 'DMST', 'DELHI', 'AHMEDABAD', '2025-07-27 12:30:00', '2025-07-27 22:40:00', 75, 75, 3400.00, 1),
-(5, 'SG1081', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-07-26 09:30:00', '2025-07-26 10:50:00', 70, 70, 3100.00, 1),
-(6, 'SG1082', 'DMST', 'MUMBAI', 'AHMEDABAD', '2025-07-27 15:25:00', '2025-07-27 16:55:00', 80, 80, 3500.00, 1),
-(7, 'SG15', 'INRNL', 'AHMEDABAD', 'DUBAI', '2025-07-27 16:35:00', '2025-07-27 18:25:00', 160, 160, 10450.00, 2),
-(8, 'SG16', 'INRNL', 'DUBAI', 'AHMEDABAD', '2025-07-27 19:25:00', '2025-07-27 23:45:00', 165, 165, 11045.00, 2),
-(9, 'AI810', 'INRNL', 'AHMEDABAD', 'TORONTO', '2025-07-27 20:20:00', '2025-07-28 10:50:00', 307, 307, 103541.00, 2),
-(10, 'AI188', 'INRNL', 'TORONTO', 'AHMEDABAD', '2025-07-28 13:10:00', '2025-07-29 19:40:00', 310, 310, 118128.00, 2),
-(11, 'AI2494', 'INRNL', 'AHMEDABAD', 'NEW YORK', '2025-07-28 20:30:00', '2025-07-29 07:55:00', 310, 310, 134520.00, 2),
-(12, 'AI144', 'INRNL', 'NEW YORK', 'AHMEDABAD', '2025-07-28 11:30:00', '2025-07-29 16:25:00', 305, 305, 174909.00, 2);
+(1, 'SG160', 'DMST', 'AHMEDABAD', 'DELHI', '2025-08-09 01:59:00', '2025-08-09 03:43:00', 85, 83, 4000.00, 1),
+(2, 'SG9232', 'DMST', 'AHMEDABAD', 'DELHI', '2025-08-10 06:10:00', '2025-08-10 07:45:00', 75, 75, 3500.00, 1),
+(3, 'SG163', 'DMST', 'DELHI', 'AHMEDABAD', '2025-08-09 20:50:00', '2025-08-09 22:40:00', 70, 70, 4205.00, 1),
+(4, 'SG9213', 'DMST', 'DELHI', 'AHMEDABAD', '2025-08-10 12:30:00', '2025-08-10 22:40:00', 75, 75, 3400.00, 1),
+(5, 'SG1081', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-08-09 09:30:00', '2025-08-09 10:50:00', 70, 70, 3100.00, 1),
+(6, 'SG1082', 'DMST', 'MUMBAI', 'AHMEDABAD', '2025-08-10 15:25:00', '2025-08-10 16:55:00', 80, 80, 3500.00, 1),
+(7, 'SG15', 'INRNL', 'AHMEDABAD', 'DUBAI', '2025-08-10 16:35:00', '2025-08-10 20:25:00', 160, 160, 10450.00, 2),
+(8, 'SG16', 'INRNL', 'DUBAI', 'AHMEDABAD', '2025-08-10 19:25:00', '2025-08-10 23:45:00', 165, 165, 11045.00, 2),
+(9, 'AI810', 'INRNL', 'AHMEDABAD', 'TORONTO', '2025-08-10 20:20:00', '2025-08-11 10:50:00', 307, 307, 103541.00, 2),
+(10, 'AI188', 'INRNL', 'TORONTO', 'AHMEDABAD', '2025-08-11 13:10:00', '2025-08-12 19:40:00', 310, 310, 118128.00, 2),
+(11, 'AI2494', 'INRNL', 'AHMEDABAD', 'NEW YORK', '2025-08-11 20:30:00', '2025-08-12 07:55:00', 310, 310, 134520.00, 2),
+(12, 'AI144', 'INRNL', 'NEW YORK', 'AHMEDABAD', '2025-08-11 11:30:00', '2025-08-12 16:25:00', 305, 305, 174909.00, 2),
+(13, 'SG1083', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-08-11 19:20:00', '2025-08-11 20:40:00', 60, 60, 3000.00, 1),
+(14, 'AI119', 'INRNL', 'MUMBAI', 'AUSTIN', '2025-08-11 01:15:00', '2025-08-12 17:44:00', 300, 300, 120000.00, 2),
+(15, 'SG151', 'DMST', 'DELHI', 'BENGALURU', '2025-08-11 19:20:00', '2025-08-11 22:00:00', 55, 55, 6959.00, 1),
+(16, 'SG541', 'DMST', 'BENGALURU', 'MUMBAI', '2025-08-12 04:10:00', '2025-08-12 06:00:00', 65, 65, 4033.00, 1),
+(17, 'AI174', 'INRNL', 'AUSTIN', 'MUMBAI', '2025-08-11 05:25:00', '2025-08-12 20:15:00', 295, 295, 115000.00, 2);
 
 -- --------------------------------------------------------
 
@@ -154,8 +244,7 @@ CREATE TABLE `payments` (
 --
 
 INSERT INTO `payments` (`payment_id`, `passenger_id`, `flight_id`, `amount`, `payment_time`, `status`) VALUES
-(1, 2, 2, 7000.00, '2025-07-24 22:42:34', 'REFUNDED'),
-(2, 2, 2, 3500.00, '2025-07-24 22:43:37', 'REFUNDED');
+(6, 3, 1, 8800.00, '2025-07-31 15:21:15', 'CONFIRMED');
 
 -- --------------------------------------------------------
 
@@ -176,18 +265,23 @@ CREATE TABLE `reports` (
 --
 
 INSERT INTO `reports` (`report_id`, `flight_id`, `seats_booked`, `revenue`, `report_date`) VALUES
-(1, 1, 0, 0.00, '2025-07-24 22:12:44'),
-(2, 2, 0, 0.00, '2025-07-24 22:42:34'),
-(3, 3, 0, 0.00, '2025-07-24 22:08:02'),
-(4, 4, 0, 0.00, '2025-07-22 22:28:50'),
-(5, 5, 0, 0.00, '2025-07-22 22:29:21'),
-(6, 6, 0, 0.00, '2025-07-22 22:29:21'),
+(1, 1, 2, 8800.00, '2025-07-31 15:21:15'),
+(2, 2, 0, 0.00, '2025-07-29 16:06:51'),
+(3, 3, 0, 0.00, '2025-07-29 03:23:07'),
+(4, 4, 0, 0.00, '2025-07-29 03:23:34'),
+(5, 5, 0, 0.00, '2025-07-29 03:23:34'),
+(6, 6, 0, 0.00, '2025-07-26 22:43:04'),
 (7, 7, 0, 0.00, '2025-07-22 22:36:31'),
 (8, 8, 0, 0.00, '2025-07-22 22:29:57'),
-(9, 9, 0, 0.00, '2025-07-22 22:30:48'),
+(9, 9, 0, 0.00, '2025-07-28 22:38:29'),
 (10, 10, 0, 0.00, '2025-07-22 22:30:48'),
 (11, 11, 0, 0.00, '2025-07-22 22:31:44'),
-(12, 12, 0, 0.00, '2025-07-22 22:31:44');
+(12, 12, 0, 0.00, '2025-07-22 22:31:44'),
+(13, 13, 0, 0.00, '2025-07-28 23:03:10'),
+(14, 14, 0, 0.00, '2025-07-28 23:01:26'),
+(15, 15, 0, 0.00, '2025-07-28 18:49:58'),
+(16, 16, 0, 0.00, '2025-07-28 18:56:37'),
+(17, 17, 0, 0.00, '2025-07-28 19:04:23');
 
 -- --------------------------------------------------------
 
@@ -209,9 +303,8 @@ CREATE TABLE `reservations` (
 --
 
 INSERT INTO `reservations` (`reservation_id`, `flight_id`, `passenger_id`, `seat_number`, `reservation_date`, `status`) VALUES
-(1, 2, 2, '42C', '2025-07-24 22:42:09', 'CANCELLED'),
-(2, 2, 2, '52C', '2025-07-24 22:42:09', 'CANCELLED'),
-(3, 2, 2, '55E', '2025-07-24 22:42:09', 'CANCELLED');
+(10, 1, 3, '80D', '2025-07-31 15:20:56', 'CONFIRMED'),
+(11, 1, 3, '54E', '2025-07-31 15:20:56', 'CONFIRMED');
 
 --
 -- Indexes for dumped tables
@@ -275,7 +368,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT for table `flights`
 --
 ALTER TABLE `flights`
-  MODIFY `flight_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `flight_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `passengers`
@@ -287,19 +380,19 @@ ALTER TABLE `passengers`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `reports`
 --
 ALTER TABLE `reports`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- Constraints for dumped tables
@@ -316,19 +409,19 @@ ALTER TABLE `flights`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`passenger_id`) REFERENCES `passengers` (`passenger_id`),
-  ADD CONSTRAINT `payments_ibfk_2` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`flight_id`);
+  ADD CONSTRAINT `payments_ibfk_2` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`flight_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `reports`
 --
 ALTER TABLE `reports`
-  ADD CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`flight_id`);
+  ADD CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`flight_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `reservations`
 --
 ALTER TABLE `reservations`
-  ADD CONSTRAINT `reservations_ibfk_1` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`flight_id`),
+  ADD CONSTRAINT `reservations_ibfk_1` FOREIGN KEY (`flight_id`) REFERENCES `flights` (`flight_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `reservations_ibfk_2` FOREIGN KEY (`passenger_id`) REFERENCES `passengers` (`passenger_id`);
 COMMIT;
 
