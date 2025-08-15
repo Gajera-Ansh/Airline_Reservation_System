@@ -21,6 +21,8 @@ public class App {
     public static String reset = "\u001B[0m";
 
     public static Scanner sc = new Scanner(System.in);
+    public static DBUtil dbUtil = new DBUtil();
+    public static FlightDAO flightDAO = new FlightDAO();
     public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     public static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
