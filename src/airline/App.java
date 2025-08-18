@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import java.util.InputMismatchException;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -39,8 +40,17 @@ public class App {
             System.out.println("2. Admin Login");
             System.out.println("3. Exit System");
             System.out.print("Enter choice: ");
+            int choice = 0;
 
-            switch (sc.nextInt()) {
+            try {
+                choice = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                sc.nextLine();
+                continue;
+            }
+
+            switch (choice) {
 //                =================================== Passenger Login ==================================
                 case 1 -> {
                     passengerLogin();
@@ -99,7 +109,16 @@ public class App {
             System.out.println("7. Return to previous Menu");
             System.out.println("8. Exit System");
             System.out.print("Enter choice: ");
-            switch (sc.nextInt()) {
+            int choice = 0;
+
+            try {
+                choice = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                sc.nextLine();
+                continue;
+            }
+            switch (choice) {
 //              ================================== Add New Flight ==================================
                 case 1 -> {
                     System.out.print("\nEnter flight number: ");
@@ -348,7 +367,16 @@ public class App {
             System.out.println("3. Return to previous Menu");
             System.out.println("4. Exit System");
             System.out.print("Enter choice: ");
-            switch (sc.nextInt()) {
+            int choice = 0;
+
+            try {
+                choice = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                sc.nextLine();
+                continue;
+            }
+            switch (choice) {
 //              ================================== User Login =====================================
                 case 1 -> {
                     System.out.print("\nEnter Email: ");
@@ -464,7 +492,16 @@ public class App {
             System.out.println("4. Return to previous Menu");
             System.out.println("5. Exit System");
             System.out.print("Enter choice: ");
-            switch (sc.nextInt()) {
+            int choice = 0;
+
+            try {
+                choice = sc.nextInt();
+            } catch (InputMismatchException e) {
+                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                sc.nextLine();
+                continue;
+            }
+            switch (choice) {
 //              ================================ Make a Reservation ==================================
                 case 1 -> {
                     System.out.print("\nEnter departure: ");
