@@ -12,6 +12,7 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
 import java.io.*;
 import java.sql.*;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class ReservationDAO {
@@ -29,9 +30,23 @@ public class ReservationDAO {
             char choice = sc.next().trim().toLowerCase().charAt(0);
             if (choice == 'y') {
                 System.out.print("\nEnter flight ID: ");
-                int flightId = sc.nextInt();
+                int flightId = 0;
+                try {
+                    flightId = sc.nextInt();
+                } catch (InputMismatchException e) {
+                    System.out.println(App.red + "\nInvalid input! Please enter a valid flight ID." + App.reset);
+                    sc.next(); // Clear the invalid input
+                    continue; // Restart the loop to ask for flight ID again
+                }
                 System.out.print("Enter number of seats to reserve: ");
-                int seats = sc.nextInt();
+                int seats = 0;
+                try {
+                    seats = sc.nextInt();
+                } catch (InputMismatchException e) {
+                    System.out.println(App.red + "\nInvalid input! Please enter a valid number of seats." + App.reset);
+                    sc.next(); // Clear the invalid input
+                    continue; // Restart the loop to ask for number of seats again
+                }
 //               ================================= Validate Seats ==================================
                 if (seats > 0 && seats <= 6) { // Assuming max 6 seats can be reserved at once
                     boolean flag = false;

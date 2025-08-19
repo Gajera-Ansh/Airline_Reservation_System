@@ -11,6 +11,7 @@ import java.io.FileWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class FlightDAO {
@@ -236,37 +237,54 @@ public class FlightDAO {
             arrTime = rs.getString(7);
         }
 
-        System.out.print("Enter new Flight number: ");
-        String newFlightNumber = sc.next().trim().toUpperCase();
+        String newFlightNumber = "";
+        while (true) {
+            System.out.print("Enter new Flight number: ");
+            newFlightNumber = sc.next().trim().toUpperCase();
+            if (newFlightNumber.matches("^[A-Z]{2,3}\\d{1,4}$")) {
+                break;
+            } else {
+                System.out.println(App.red + "\nInvalid flight number! Please use the format ABC1234." + App.reset);
+                continue;
+            }
+        }
 
         String sql1 = "{CALL checkFlight(?, ?, ?, ?, ?)}";
         CallableStatement cst = DBUtil.con.prepareCall(sql1);
         cst.setString(1, departure);
         cst.setString(2, destination);
 
-        System.out.print("Enter new departure time (yyyy-mm-dd hh:mm:ss): ");
-        sc.nextLine();
-        String newDepartureTime = sc.nextLine().trim();
-
-        // Validate the new departure time
-        LocalDateTime departureTime = LocalDateTime.parse(newDepartureTime, App.dateTimeFormatter);
-        if (departureTime.isAfter(LocalDateTime.now())) {
-            cst.setString(3, newDepartureTime);
-        } else {
-            System.out.println(App.red + "\nDeparture time must be in the future." + App.reset);
-            return false;
+        String newDepartureTime = "";
+        LocalDateTime departureTime = null;
+        while (true) {
+            System.out.print("Enter new departure time (yyyy-mm-dd hh:mm:ss): ");
+            sc.nextLine();
+            newDepartureTime = sc.nextLine().trim();
+            // Validate the new departure time
+            departureTime = LocalDateTime.parse(newDepartureTime, App.dateTimeFormatter);
+            if (departureTime.isAfter(LocalDateTime.now())) {
+                cst.setString(3, newDepartureTime);
+                break;
+            } else {
+                System.out.println(App.red + "\nDeparture time must be in the future." + App.reset);
+            }
         }
 
-        System.out.print("Enter new arrival time (yyyy-mm-dd hh:mm:ss): ");
-        String newArrivalTime = sc.nextLine().trim();
 
-        // Validate the new arrival time
-        LocalDateTime arrivalTime = LocalDateTime.parse(newArrivalTime, App.dateTimeFormatter);
-        if (arrivalTime.isAfter(departureTime)) {
-            cst.setString(4, newArrivalTime);
-        } else {
-            System.out.println(App.red + "\nArrival time must be after departure time." + App.reset);
-            return false;
+        String newArrivalTime = "";
+        LocalDateTime arrivalTime = null;
+        while (true) {
+            System.out.print("Enter new arrival time (yyyy-mm-dd hh:mm:ss): ");
+            newArrivalTime = sc.nextLine().trim();
+
+            // Validate the new arrival time
+            arrivalTime = LocalDateTime.parse(newArrivalTime, App.dateTimeFormatter);
+            if (arrivalTime.isAfter(departureTime)) {
+                cst.setString(4, newArrivalTime);
+                break;
+            } else {
+                System.out.println(App.red + "\nArrival time must be after departure time." + App.reset);
+            }
         }
 
         try {
@@ -276,9 +294,16 @@ public class FlightDAO {
             return false;
         }
 
-        System.out.print("Enter new total seats: ");
-        int totalSeats = sc.nextInt();
-
+        int totalSeats = 0;
+        while (true) {
+            System.out.print("Enter new total seats: ");
+            try {
+                totalSeats = sc.nextInt();
+                break;
+            } catch (InputMismatchException e) {
+                System.out.println(App.red + "\nInvalid total seats! Please enter a valid number." + App.reset);
+            }
+        }
 
         // Check the total passenger in the flight
         String query = "SELECT count(*) FROM reservations WHERE flight_id = " + flightId + " AND status = 'CONFIRMED'";
@@ -289,8 +314,18 @@ public class FlightDAO {
         }
         int availableSeats = totalSeats - bookedSeats;
 
-        System.out.print("Enter new price: ");
-        double price = sc.nextDouble();
+        double price = 0;
+        while (true) {
+            System.out.print("Enter new price: ");
+            try {
+                price = sc.nextDouble();
+                break;
+            }
+            catch (InputMismatchException e) {
+                System.out.println(App.red + "\nInvalid price! Please enter a valid number." + App.reset);
+                sc.next(); // Clear the invalid input
+            }
+        }
 
 
         // Check if the flight already exists with the same details
@@ -305,7 +340,7 @@ public class FlightDAO {
             crs.populate(rs1);
 
             // If there are no confirmed reservations, update the flight directly
-            if (!(crs.size()>0)) {
+            if (!(crs.size() > 0)) {
 
                 // Update the flight details
                 String sql3 = "{CALL updateFlight(?, ?, ?, ?, ?, ?, ?)}";
@@ -331,8 +366,8 @@ public class FlightDAO {
                 String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
                 ResultSet rs2 = st.executeQuery(sql3);
                 FileWriter fw = null;
-                while(rs2.next()) {
-                    fw = new FileWriter("D://"+rs2.getString(2)+".txt");
+                while (rs2.next()) {
+                    fw = new FileWriter("D://" + rs2.getString(2) + ".txt");
                     fw.write("Subject: Flight Update Notice\n\n");
                     fw.write("Dear " + rs2.getString(1) + ",\n\n");
                     fw.write("We regret to inform you that the flight " + flightNumber + " from " + departure + " to " + destination + " on " + depTime + " has been updated by the administrator.\n\n");

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.InputMismatchException;
+import java.util.InvalidPropertiesFormatException;
 import java.util.Objects;
 import java.util.Scanner;
 
@@ -164,9 +165,11 @@ public class App {
                         System.out.print("Enter departure time (yyyy-MM-dd HH:mm:ss): ");
                         sc.nextLine();
                         departureTime = sc.nextLine().trim();
-                        depTime = LocalDateTime.parse(departureTime, dateTimeFormatter);
+
                         // Validate departure time format
                         if (departureTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+
+                            depTime = LocalDateTime.parse(departureTime, dateTimeFormatter);
                             // Check if departure time is in the past
                             if (depTime.isBefore(LocalDateTime.now())) {
                                 System.out.println(red + "\nDeparture time cannot be in the past.\n" + reset);
@@ -203,7 +206,13 @@ public class App {
 
                     while (true) {
                         System.out.print("Enter total seats: ");
-                        totalSeats = sc.nextInt();
+                        try {
+                            totalSeats = sc.nextInt();
+                        } catch (InputMismatchException e) {
+                            System.out.println(red + "\nInvalid total seats! Please enter a valid number.\n" + reset);
+                            sc.nextLine(); // Clear the invalid input
+                            continue;
+                        }
                         // Validate total seats
                         if (totalSeats > 0) {
                             break;
@@ -215,7 +224,13 @@ public class App {
 
                     while (true) {
                         System.out.print("Enter price: ");
-                        price = sc.nextDouble();
+                        try {
+                            price = sc.nextDouble();
+                        } catch (InputMismatchException e) {
+                            System.out.println(red + "\nInvalid price! Please enter a valid number.\n" + reset);
+                            sc.nextLine(); // Clear the invalid input
+                            continue;
+                        }
                         // Validate price
                         if (price > 0) {
                             break;
@@ -240,7 +255,7 @@ public class App {
                         continue;
                     }
                 }
-//              ================================== Remove Flight ==================================
+//              ================================== Remove Flight ===================================
                 case 2 -> {
                     System.out.print("\nEnter flight number to remove: ");
                     String flightNumber = sc.next().trim();
@@ -446,7 +461,7 @@ public class App {
                             boolean emailExists = false;
                             for (int i = 0; i < passengers.size(); i++) {
                                 if (passengers.get(i).getEmail().equals(email)) {
-                                    System.out.println(red + "\nEmail already exists! Please use a different email.\n" + reset);
+                                    System.out.println(red + "\nEmail already exists! Please use a different email (Ex. xyz123@example.com).\n" + reset);
                                     emailExists = true;
                                     break;
                                 }
@@ -583,8 +598,15 @@ public class App {
                 }
 //              ================================== View Reservations ==================================
                 case 2 -> {
+                    int flightId = 0;
                     System.out.print("\nEnter flight ID: ");
-                    int flightId = sc.nextInt();
+                    try {
+                        flightId = sc.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println(red + "\nInvalid flight ID! Please enter a valid number." + reset);
+                        sc.nextLine(); // Clear the invalid input
+                        continue;
+                    }
                     if (flightId < 0) {
                         System.out.println(red + "\nInvalid flight ID! Please enter a positive number." + reset);
                         continue;
@@ -594,7 +616,14 @@ public class App {
 //              ================================== Cancel a Reservation ==================================
                 case 3 -> {
                     System.out.print("\nEnter flight ID: ");
-                    int flightId = sc.nextInt();
+                    int flightId = 0;
+                    try {
+                        flightId = sc.nextInt();
+                    } catch (InputMismatchException e) {
+                        System.out.println(red + "\nInvalid flight ID! Please enter a valid number." + reset);
+                        sc.nextLine(); // Clear the invalid input
+                        continue;
+                    }
                     if (flightId < 0) {
                         System.out.println(red + "\nInvalid flight ID! Please enter a positive number." + reset);
                         continue;
