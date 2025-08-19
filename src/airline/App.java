@@ -54,12 +54,10 @@ public class App {
 //                =================================== Passenger Login ==================================
                 case 1 -> {
                     passengerLogin();
-                    break;
                 }
 //                =================================== Admin Login ==================================
                 case 2 -> {
                     adminLogin();
-                    break;
                 }
 //                =================================== Exit System ==================================
                 case 3 -> {
@@ -121,96 +119,124 @@ public class App {
             switch (choice) {
 //              ================================== Add New Flight ==================================
                 case 1 -> {
-                    System.out.print("\nEnter flight number: ");
-                    String fnumber = sc.next().trim().toUpperCase();
+                    String fnumber, departure, destination, departureTime, arrivalTime;
+                    LocalDateTime depTime, arrTime;
+                    int totalSeats = 0;
+                    double price = 0;
 
-                    // Validate flight number format
-                    if (fnumber.matches("^[A-Z]{2,3}\\d{1,4}$")) {
-                        System.out.print("Enter departure: ");
-                        String departure = sc.next().trim().toUpperCase();
-
-                        // Validate departure format
-                        if (departure.matches("^[a-zA-Z\\s]+$")) {
-                            System.out.print("Enter destination: ");
-                            String destination = sc.next().trim().toUpperCase();
-
-                            // Validate destination format
-                            if (destination.matches("^[a-zA-Z\\s]+$")) {
-                                System.out.print("Enter departure time (yyyy-MM-dd HH:mm:ss): ");
-                                sc.nextLine();
-                                String departureTime = sc.nextLine().trim();
-                                LocalDateTime depTime = LocalDateTime.parse(departureTime, dateTimeFormatter);
-
-                                // Validate departure time format
-                                if (departureTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
-
-                                    // Check if departure time is in the past
-                                    if (depTime.isBefore(LocalDateTime.now())) {
-                                        System.out.println(red + "\nDeparture time cannot be in the past." + reset);
-                                        continue;
-                                    }
-                                    System.out.print("Enter arrival time (yyyy-MM-dd HH:mm:ss): ");
-                                    String arrivalTime = sc.nextLine().trim();
-
-                                    // Validate arrival time format
-                                    if (arrivalTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
-
-                                        // Check if it is after departure time
-                                        LocalDateTime arrTime = LocalDateTime.parse(arrivalTime, dateTimeFormatter);
-                                        if (arrTime.isBefore(depTime) || arrTime.isEqual(depTime)) {
-                                            System.out.println(red + "\nArrival time must be after departure time." + reset);
-                                            continue;
-                                        }
-                                        System.out.print("Enter total seats: ");
-                                        int totalSeats = sc.nextInt();
-
-                                        // Validate total seats
-                                        if (totalSeats > 0) {
-                                            System.out.print("Enter price: ");
-                                            double price = sc.nextDouble();
-
-                                            // Validate price
-                                            if (price > 0) {
-                                                String fType = "";
-                                                if (adminId == 1) {
-                                                    fType = "DMST";
-                                                } else {
-                                                    fType = "INRNL";
-                                                }
-                                                Flight newFlight = new Flight(0, fnumber, fType, departure, destination, departureTime, arrivalTime, totalSeats, totalSeats, price, adminId);
-                                                if (FlightDAO.addFlight(newFlight)) {
-                                                    System.out.println(green + "\nFlight added successfully!" + reset);
-                                                    continue;
-                                                } else {
-                                                    System.out.println(red + "\nFailed to add flight. Please try again." + reset);
-                                                    continue;
-                                                }
-                                            } else {
-                                                System.out.println(red + "\nInvalid price! Please enter a positive number." + reset);
-                                                continue;
-                                            }
-                                        } else {
-                                            System.out.println(red + "\nInvalid total seats! Please enter a positive number." + reset);
-                                            continue;
-                                        }
-                                    } else {
-                                        System.out.println(red + "\nInvalid arrival time format! Please use yyyy-MM-dd HH:mm:ss." + reset);
-                                        continue;
-                                    }
-                                } else {
-                                    System.out.println(red + "\nInvalid departure time format! Please use yyyy-MM-dd HH:mm:ss." + reset);
-                                    continue;
-                                }
-                            } else {
-                                System.out.println(red + "\nInvalid destination! Please use only letters and spaces." + reset);
-                                continue;
-                            }
+                    while (true) {
+                        System.out.print("\nEnter flight number: ");
+                        fnumber = sc.next().trim().toUpperCase();
+                        // Validate flight number format
+                        if (fnumber.matches("^[A-Z]{2,3}\\d{1,4}$")) {
+                            break;
                         } else {
-                            System.out.println(red + "\nInvalid departure! Please use only letters and spaces." + reset);
+                            System.out.println(red + "\nInvalid flight number! Please use the format ABC1234." + reset);
                             continue;
                         }
+                    }
+
+                    while (true) {
+                        System.out.print("Enter departure: ");
+                        departure = sc.next().trim().toUpperCase();
+                        // Validate departure format
+                        if (departure.matches("^[a-zA-Z\\s]+$")) {
+                            break;
+                        } else {
+                            System.out.println(red + "\nInvalid departure! Please use only letters and spaces.\n" + reset);
+                            continue;
+                        }
+                    }
+
+                    while (true) {
+                        System.out.print("Enter destination: ");
+                        destination = sc.next().trim().toUpperCase();
+                        // Validate destination format
+                        if (destination.matches("^[a-zA-Z\\s]+$")) {
+                            break;
+                        } else {
+                            System.out.println(red + "\nInvalid destination! Please use only letters and spaces.\n" + reset);
+                            continue;
+                        }
+                    }
+
+                    while (true) {
+                        System.out.print("Enter departure time (yyyy-MM-dd HH:mm:ss): ");
+                        sc.nextLine();
+                        departureTime = sc.nextLine().trim();
+                        depTime = LocalDateTime.parse(departureTime, dateTimeFormatter);
+                        // Validate departure time format
+                        if (departureTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                            // Check if departure time is in the past
+                            if (depTime.isBefore(LocalDateTime.now())) {
+                                System.out.println(red + "\nDeparture time cannot be in the past.\n" + reset);
+                                continue;
+                            } else {
+                                break;
+                            }
+                        } else {
+                            System.out.println(red + "\nInvalid departure time format! Please use yyyy-MM-dd HH:mm:ss.\n" + reset);
+                            continue;
+                        }
+                    }
+
+                    while (true) {
+                        System.out.print("Enter arrival time (yyyy-MM-dd HH:mm:ss): ");
+                        arrivalTime = sc.nextLine().trim();
+
+                        // Validate arrival time format
+                        if (arrivalTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+
+                            // Check if it is after departure time
+                            arrTime = LocalDateTime.parse(arrivalTime, dateTimeFormatter);
+                            if (arrTime.isBefore(depTime) || arrTime.isEqual(depTime)) {
+                                System.out.println(red + "\nArrival time must be after departure time.\n" + reset);
+                                continue;
+                            } else {
+                                break;
+                            }
+                        } else {
+                            System.out.println(red + "\nInvalid arrival time format! Please use yyyy-MM-dd HH:mm:ss.\n" + reset);
+                            continue;
+                        }
+                    }
+
+                    while (true) {
+                        System.out.print("Enter total seats: ");
+                        totalSeats = sc.nextInt();
+                        // Validate total seats
+                        if (totalSeats > 0) {
+                            break;
+                        } else {
+                            System.out.println(red + "\nInvalid total seats! Please enter a positive number.\n" + reset);
+                            continue;
+                        }
+                    }
+
+                    while (true) {
+                        System.out.print("Enter price: ");
+                        price = sc.nextDouble();
+                        // Validate price
+                        if (price > 0) {
+                            break;
+                        } else {
+                            System.out.println(red + "\nInvalid price! Please enter a positive number." + reset);
+                            continue;
+                        }
+                    }
+
+                    String fType = "";
+                    if (adminId == 1) {
+                        fType = "DMST";
                     } else {
-                        System.out.println(red + "\nInvalid flight number! Please use the format ABC1234." + reset);
+                        fType = "INRNL";
+                    }
+                    Flight newFlight = new Flight(0, fnumber, fType, departure, destination, departureTime, arrivalTime, totalSeats, totalSeats, price, adminId);
+                    if (FlightDAO.addFlight(newFlight)) {
+                        System.out.println(green + "\nFlight added successfully!" + reset);
+                        continue;
+                    } else {
+                        System.out.println(red + "\nFailed to add flight. Please try again." + reset);
                         continue;
                     }
                 }
@@ -482,16 +508,16 @@ public class App {
                         System.out.println(red + "\nRegistration failed! Please try again." + reset);
                     }
                 }
-//              ================================== Return to Main Menu ==========================
+//              ================================== Return to Main Menu ============================
                 case 3 -> {
                     return;
                 }
-//              ================================== Exit System ==================================
+//              ================================== Exit System ====================================
                 case 4 -> {
                     System.out.println(red + "\nExiting the system\n" + reset);
                     System.exit(0);
                 }
-//              ================================== Invalid Choice ==============================
+//              ================================== Invalid Choice =================================
                 default -> {
                     System.out.println(red + "\nInvalid choice! Please try again." + reset);
                 }

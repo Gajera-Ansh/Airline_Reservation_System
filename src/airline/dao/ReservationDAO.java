@@ -10,10 +10,8 @@ import airline.ds.HashMap;
 
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
-import javax.swing.plaf.nimbus.State;
 import java.io.*;
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.Scanner;
 
 public class ReservationDAO {
@@ -269,7 +267,7 @@ public class ReservationDAO {
     }
 
     public static boolean cancelReservation(String name, int flightId) throws Exception {
-        System.out.print("\nDo you want to cancel all the reservations for this flight? (y/n): ");
+        System.out.print("\nDo you want to cancel all the reservations? (y/n): ");
         char choice = sc.next().trim().toLowerCase().charAt(0);
         if (choice == 'y') {
             con.setAutoCommit(false);
