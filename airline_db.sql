@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 15, 2025 at 06:38 AM
+-- Generation Time: Aug 19, 2025 at 05:07 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -173,23 +173,23 @@ CREATE TABLE `flights` (
 --
 
 INSERT INTO `flights` (`flight_id`, `flight_number`, `flight_type`, `departure`, `destination`, `departure_time`, `arrival_time`, `total_seats`, `available_seats`, `price`, `admin_id`) VALUES
-(1, 'SG160', 'DMST', 'AHMEDABAD', 'DELHI', '2025-08-09 01:59:00', '2025-08-09 03:43:00', 85, 83, 4000.00, 1),
-(2, 'SG9232', 'DMST', 'AHMEDABAD', 'DELHI', '2025-08-10 06:10:00', '2025-08-10 07:45:00', 75, 75, 3500.00, 1),
-(3, 'SG163', 'DMST', 'DELHI', 'AHMEDABAD', '2025-08-09 20:50:00', '2025-08-09 22:40:00', 70, 70, 4205.00, 1),
-(4, 'SG9213', 'DMST', 'DELHI', 'AHMEDABAD', '2025-08-10 12:30:00', '2025-08-10 22:40:00', 75, 75, 3400.00, 1),
-(5, 'SG1081', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-08-09 09:30:00', '2025-08-09 10:50:00', 70, 70, 3100.00, 1),
-(6, 'SG1082', 'DMST', 'MUMBAI', 'AHMEDABAD', '2025-08-10 15:25:00', '2025-08-10 16:55:00', 80, 80, 3500.00, 1),
-(7, 'SG15', 'INRNL', 'AHMEDABAD', 'DUBAI', '2025-08-10 16:35:00', '2025-08-10 20:25:00', 160, 160, 10450.00, 2),
-(8, 'SG16', 'INRNL', 'DUBAI', 'AHMEDABAD', '2025-08-10 19:25:00', '2025-08-10 23:45:00', 165, 165, 11045.00, 2),
-(9, 'AI810', 'INRNL', 'AHMEDABAD', 'TORONTO', '2025-08-10 20:20:00', '2025-08-11 10:50:00', 307, 307, 103541.00, 2),
-(10, 'AI188', 'INRNL', 'TORONTO', 'AHMEDABAD', '2025-08-11 13:10:00', '2025-08-12 19:40:00', 310, 310, 118128.00, 2),
-(11, 'AI2494', 'INRNL', 'AHMEDABAD', 'NEW YORK', '2025-08-11 20:30:00', '2025-08-12 07:55:00', 310, 310, 134520.00, 2),
-(12, 'AI144', 'INRNL', 'NEW YORK', 'AHMEDABAD', '2025-08-11 11:30:00', '2025-08-12 16:25:00', 305, 305, 174909.00, 2),
-(13, 'SG1083', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-08-11 19:20:00', '2025-08-11 20:40:00', 60, 60, 3000.00, 1),
-(14, 'AI119', 'INRNL', 'MUMBAI', 'AUSTIN', '2025-08-11 01:15:00', '2025-08-12 17:44:00', 300, 300, 120000.00, 2),
-(15, 'SG151', 'DMST', 'DELHI', 'BENGALURU', '2025-08-11 19:20:00', '2025-08-11 22:00:00', 55, 55, 6959.00, 1),
-(16, 'SG541', 'DMST', 'BENGALURU', 'MUMBAI', '2025-08-12 04:10:00', '2025-08-12 06:00:00', 65, 65, 4033.00, 1),
-(17, 'AI174', 'INRNL', 'AUSTIN', 'MUMBAI', '2025-08-11 05:25:00', '2025-08-12 20:15:00', 295, 295, 115000.00, 2);
+(1, 'SG160', 'DMST', 'AHMEDABAD', 'DELHI', '2025-08-20 01:59:00', '2025-08-20 03:43:00', 85, 84, 4000.00, 1),
+(2, 'SG9232', 'DMST', 'AHMEDABAD', 'DELHI', '2025-08-21 06:10:00', '2025-08-21 07:45:00', 75, 75, 3500.00, 1),
+(3, 'SG163', 'DMST', 'DELHI', 'AHMEDABAD', '2025-08-20 20:50:00', '2025-08-20 22:40:00', 70, 70, 4205.00, 1),
+(4, 'SG9213', 'DMST', 'DELHI', 'AHMEDABAD', '2025-08-21 12:30:00', '2025-08-21 22:40:00', 75, 75, 3400.00, 1),
+(5, 'SG1081', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-08-20 09:30:00', '2025-08-20 10:50:00', 70, 68, 3100.00, 1),
+(6, 'SG1082', 'DMST', 'MUMBAI', 'AHMEDABAD', '2025-08-21 15:25:00', '2025-08-21 16:55:00', 80, 78, 3500.00, 1),
+(7, 'SG15', 'INRNL', 'AHMEDABAD', 'DUBAI', '2025-08-21 16:35:00', '2025-08-21 20:25:00', 160, 160, 10450.00, 2),
+(8, 'SG16', 'INRNL', 'DUBAI', 'AHMEDABAD', '2025-08-21 19:25:00', '2025-08-21 23:45:00', 165, 165, 11045.00, 2),
+(9, 'AI810', 'INRNL', 'AHMEDABAD', 'TORONTO', '2025-08-21 20:20:00', '2025-08-22 10:50:00', 307, 307, 103541.00, 2),
+(10, 'AI188', 'INRNL', 'TORONTO', 'AHMEDABAD', '2025-08-22 13:10:00', '2025-08-23 19:40:00', 310, 310, 118128.00, 2),
+(11, 'AI2494', 'INRNL', 'AHMEDABAD', 'NEW YORK', '2025-08-22 20:30:00', '2025-08-23 07:55:00', 310, 310, 134520.00, 2),
+(12, 'AI144', 'INRNL', 'NEW YORK', 'AHMEDABAD', '2025-08-22 11:30:00', '2025-08-23 16:25:00', 305, 305, 174909.00, 2),
+(13, 'SG1083', 'DMST', 'AHMEDABAD', 'MUMBAI', '2025-08-22 19:20:00', '2025-08-22 20:40:00', 60, 60, 3000.00, 1),
+(14, 'AI119', 'INRNL', 'MUMBAI', 'AUSTIN', '2025-08-22 01:15:00', '2025-08-23 17:44:00', 300, 300, 120000.00, 2),
+(15, 'SG151', 'DMST', 'DELHI', 'BENGALURU', '2025-08-22 19:20:00', '2025-08-22 22:00:00', 55, 55, 6959.00, 1),
+(16, 'SG541', 'DMST', 'BENGALURU', 'MUMBAI', '2025-08-23 04:10:00', '2025-08-23 06:00:00', 65, 65, 4033.00, 1),
+(17, 'AI174', 'INRNL', 'AUSTIN', 'MUMBAI', '2025-08-22 05:25:00', '2025-08-23 20:15:00', 295, 295, 115000.00, 2);
 
 -- --------------------------------------------------------
 
@@ -222,7 +222,8 @@ INSERT INTO `passengers` (`passenger_id`, `name`, `email`, `phone`, `password`) 
 (10, 'Neha Choudhury', 'neha.c@example.com', '9876501234', 'nehac@1'),
 (11, 'Sanjay Verma', 'sanjay.verma@example.com', '8899776600', 'sverma#88'),
 (23, 'Ansh Gajera', 'ansh.gajera@gmail.com', '9875181452', 'ansh@4227'),
-(24, 'Keyan Patel', 'keyan.j@outlook.com', '6427555193', 'keyzorr_18');
+(24, 'Keyan Patel', 'keyan.j@outlook.com', '6427555193', 'keyzorr_18'),
+(25, 'Rudra Gondaliya', 'rudragndly123@gmail.com', '8347290507', 'rudra@123');
 
 -- --------------------------------------------------------
 
@@ -244,7 +245,11 @@ CREATE TABLE `payments` (
 --
 
 INSERT INTO `payments` (`payment_id`, `passenger_id`, `flight_id`, `amount`, `payment_time`, `status`) VALUES
-(6, 3, 1, 8800.00, '2025-07-31 15:21:15', 'CONFIRMED');
+(6, 3, 1, 4800.00, '2025-07-31 15:21:15', 'CONFIRMED'),
+(7, 1, 7, 10450.00, '2025-08-18 11:11:37', 'REFUNDED'),
+(8, 1, 5, 6200.00, '2025-08-18 11:27:09', 'CONFIRMED'),
+(9, 2, 6, 7000.00, '2025-08-19 17:14:57', 'CONFIRMED'),
+(10, 3, 1, 4000.00, '2025-08-19 18:16:23', 'REFUNDED');
 
 -- --------------------------------------------------------
 
@@ -265,13 +270,13 @@ CREATE TABLE `reports` (
 --
 
 INSERT INTO `reports` (`report_id`, `flight_id`, `seats_booked`, `revenue`, `report_date`) VALUES
-(1, 1, 2, 8800.00, '2025-07-31 15:21:15'),
+(1, 1, 1, 4800.00, '2025-07-31 15:21:15'),
 (2, 2, 0, 0.00, '2025-07-29 16:06:51'),
 (3, 3, 0, 0.00, '2025-07-29 03:23:07'),
 (4, 4, 0, 0.00, '2025-07-29 03:23:34'),
-(5, 5, 0, 0.00, '2025-07-29 03:23:34'),
-(6, 6, 0, 0.00, '2025-07-26 22:43:04'),
-(7, 7, 0, 0.00, '2025-07-22 22:36:31'),
+(5, 5, 2, 6200.00, '2025-08-18 11:27:09'),
+(6, 6, 2, 7000.00, '2025-08-19 17:14:57'),
+(7, 7, 0, 0.00, '2025-08-18 11:11:37'),
 (8, 8, 0, 0.00, '2025-07-22 22:29:57'),
 (9, 9, 0, 0.00, '2025-07-28 22:38:29'),
 (10, 10, 0, 0.00, '2025-07-22 22:30:48'),
@@ -293,6 +298,7 @@ CREATE TABLE `reservations` (
   `reservation_id` int(11) NOT NULL,
   `flight_id` int(11) NOT NULL,
   `passenger_id` int(11) NOT NULL,
+  `passengerName` varchar(50) DEFAULT NULL,
   `seat_number` varchar(5) NOT NULL,
   `reservation_date` datetime DEFAULT current_timestamp(),
   `status` enum('CONFIRMED','CANCELLED') DEFAULT 'CONFIRMED'
@@ -302,9 +308,14 @@ CREATE TABLE `reservations` (
 -- Dumping data for table `reservations`
 --
 
-INSERT INTO `reservations` (`reservation_id`, `flight_id`, `passenger_id`, `seat_number`, `reservation_date`, `status`) VALUES
-(10, 1, 3, '80D', '2025-07-31 15:20:56', 'CONFIRMED'),
-(11, 1, 3, '54E', '2025-07-31 15:20:56', 'CONFIRMED');
+INSERT INTO `reservations` (`reservation_id`, `flight_id`, `passenger_id`, `passengerName`, `seat_number`, `reservation_date`, `status`) VALUES
+(10, 1, 3, 'Nitin', '80D', '2025-07-31 15:20:56', 'CONFIRMED'),
+(11, 1, 3, 'Jatin', '54E', '2025-07-31 15:20:56', 'CANCELLED'),
+(12, 7, 1, 'Rajesh', '159F', '2025-08-18 11:10:49', 'CANCELLED'),
+(13, 5, 1, 'Suresh', '68B', '2025-08-18 11:26:35', 'CONFIRMED'),
+(14, 5, 1, 'Manish', '7C', '2025-08-18 11:26:35', 'CONFIRMED'),
+(15, 6, 2, 'Prince', '78E', '2025-08-19 17:13:37', 'CONFIRMED'),
+(16, 6, 2, 'Ansh', '59E', '2025-08-19 17:13:37', 'CONFIRMED');
 
 --
 -- Indexes for dumped tables
@@ -374,13 +385,13 @@ ALTER TABLE `flights`
 -- AUTO_INCREMENT for table `passengers`
 --
 ALTER TABLE `passengers`
-  MODIFY `passenger_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `passenger_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `reports`
@@ -392,7 +403,7 @@ ALTER TABLE `reports`
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `reservation_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- Constraints for dumped tables
