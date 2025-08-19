@@ -91,7 +91,7 @@ public class AdminDAO {
             System.out.printf("%-17s %-17s %-20s %-20s %-15s %-15s\n", "\nReservation id", "Passenger id", "Name", "Email", "Phone", "Seat Number");
             System.out.println("--------------------------------------------------------------------------------------------------------");
             while (crs.next()) {
-                System.out.printf("%-15s %-15s %-20s %-20s %-15s %-15s\n", crs.getInt("reservation_id"), crs.getInt("passenger_id"), crs.getString("name"), crs.getString("email"), crs.getString("phone"), crs.getString("seat_number"));
+                System.out.printf("%-15s %-15s %-20s %-20s %-15s %-15s\n", crs.getInt("reservation_id"), crs.getInt("passenger_id"), crs.getString("passengerName"), crs.getString("email"), crs.getString("phone"), crs.getString("seat_number"));
             }
 
             System.out.print("\nDo you want to download the pdf (y/n): ");

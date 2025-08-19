@@ -534,30 +534,15 @@ public class App {
                         System.out.println(red + "\nInvalid destination! Please use only letters and spaces." + reset);
                         continue;
                     }
-                    System.out.print("Enter date(yyyy-MM-dd): ");
-                    String date = sc.next().trim();
-                    if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
-                        System.out.println(red + "\nInvalid date format! Please use yyyy-MM-dd." + reset);
-                        continue;
-                    } else {
-                        LocalDate today = LocalDate.now();
-                        LocalDate inputDate = LocalDate.parse(date, dateFormatter);
-                        if (inputDate.isBefore(today)) {
-                            System.out.println(red + "\nDate cannot be in the past! Please enter a valid date." + reset);
-                            continue;
-                        }
-                    }
 
 //                  ================================== Search for Flights ==================================
                     ArrayList<Flight> availableFlights = new ArrayList<>();
                     for (int i = 0; i < flights.size(); i++) {
                         boolean matchesRoute = flights.get(i).getDeparture().equalsIgnoreCase(departure) && flights.get(i).getDestination().equalsIgnoreCase(destination);
 
-                        boolean matchesDate = Objects.requireNonNull(FlightDAO.getFlightDate(flights.get(i).getFlight_id())).isEqual(LocalDate.parse(date, dateFormatter));
-
                         boolean hasAvailableSeats = flights.get(i).getAvailable_seats() > 0;
 
-                        if (matchesRoute && matchesDate && hasAvailableSeats) {
+                        if (matchesRoute && hasAvailableSeats) {
                             availableFlights.add(flights.get(i));
                         }
                     }
@@ -567,47 +552,29 @@ public class App {
                         continue;
                     }
 
-//                  ================================== More Flights Available ==================================
-                    ArrayList<Flight> moreFlights = FlightDAO.moreFlights(departure, destination, flights);
-                    availableFlights = moreFlights == null ? availableFlights : moreFlights;
-
-//                   ================================= Make a Reservation ==================================
+//                  ================================== Make a Reservation ==================================
                     ReservationDAO.makeAReservation(availableFlights, p);
                 }
 //              ================================== View Reservations ==================================
                 case 2 -> {
-                    System.out.print("\nEnter your full name: ");
-                    sc.nextLine();
-                    String name = sc.nextLine().trim();
-                    if (!name.matches("^[a-zA-Z\\s]+$")) {
-                        System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
-                        continue;
-                    }
-                    System.out.print("Enter flight ID: ");
+                    System.out.print("\nEnter flight ID: ");
                     int flightId = sc.nextInt();
                     if (flightId < 0) {
                         System.out.println(red + "\nInvalid flight ID! Please enter a positive number." + reset);
                         continue;
                     }
-                    ReservationDAO.viewReservations(name, flightId);
+                    ReservationDAO.viewReservations(p.name, flightId);
                 }
 //              ================================== Cancel a Reservation ==================================
                 case 3 -> {
-                    System.out.print("\nEnter your full name: ");
-                    sc.nextLine();
-                    String name = sc.nextLine().trim();
-                    if (!name.matches("^[a-zA-Z\\s]+$")) {
-                        System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
-                        continue;
-                    }
-                    System.out.print("Enter flight ID: ");
+                    System.out.print("\nEnter flight ID: ");
                     int flightId = sc.nextInt();
                     if (flightId < 0) {
                         System.out.println(red + "\nInvalid flight ID! Please enter a positive number." + reset);
                         continue;
                     }
-                    if (ReservationDAO.viewReservations(name, flightId)) {
-                        if (ReservationDAO.cancelReservation(name, flightId)) {
+                    if (ReservationDAO.viewReservationForCancelReservation(p.name, flightId)) {
+                        if (ReservationDAO.cancelReservation(p.name, flightId)) {
                             continue;
                         } else {
                             System.out.println(red + "\nFailed to cancel reservation. Please try again." + reset);

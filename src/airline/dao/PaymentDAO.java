@@ -31,7 +31,6 @@ public class PaymentDAO {
         System.out.println("\nQR code is generated at " + App.green + f1.getAbsolutePath() + App.reset);
         System.out.println("\nPlease scan the QR code to make the payment.");
         System.out.print("\nPress Enter after payment is done.");
-        sc.nextLine(); // Consume the newline character left by previous input
         sc.nextLine(); // Wait for user to press Enter
 
 //        ========== Password Generation ==========

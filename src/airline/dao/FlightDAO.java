@@ -49,50 +49,6 @@ public class FlightDAO {
         return flights;
     }
 
-    public static LocalDate getFlightDate(int id) throws Exception {
-
-        // Fetch the date of a flight by its ID
-        String sql = "SELECT DATE(departure_time) FROM flights WHERE flight_id = " + id;
-        Statement st = DBUtil.con.createStatement();
-        ResultSet rs = st.executeQuery(sql);
-        if (rs.next()) {
-            return rs.getDate(1).toLocalDate();
-        } else {
-            return null;
-        }
-    }
-
-    public static ArrayList<Flight> moreFlights(String departure, String destination, ArrayList<Flight> flights) throws Exception {
-        while (true) {
-//            ================================ Check for More Flights ==================================
-            ArrayList<Flight> flight = flights;
-            ArrayList<Flight> availableFlights = new ArrayList<>();
-            System.out.print("\nWant to see more flights? (y/n): ");
-            char choice = sc.next().trim().toLowerCase().charAt(0);
-
-            if (choice == 'y') {
-//                ================================ Search for More Flights ==================================
-                for (int i = 0; i < flight.size(); i++) {
-                    boolean matchesRoute = flight.get(i).getDeparture().equalsIgnoreCase(departure) && flight.get(i).getDestination().equalsIgnoreCase(destination);
-
-                    boolean hasAvailableSeats = flight.get(i).getAvailable_seats() > 0;
-
-                    if (matchesRoute && hasAvailableSeats) {
-                        availableFlights.add(flight.get(i));
-                    }
-                }
-//                ================================ Display Available Flights ==================================
-                displayAvailableFlights(availableFlights);
-                return availableFlights;
-            } else if (choice == 'n') {
-                return null;
-            } else {
-                System.out.println(App.red + "\nInvalid choice! Please try again." + App.reset);
-                continue;
-            }
-        }
-    }
-
     public static boolean displayAvailableFlights(ArrayList<Flight> availableFlights) throws Exception {
 //        ================================ No Flights Available ==================================
         if (availableFlights.size() == 0) {

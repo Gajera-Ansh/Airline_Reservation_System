@@ -35,7 +35,7 @@ public class PDFReceiptGenerator {
         CallableStatement c1 = DBUtil.con.prepareCall(q1);
         c1.setInt(1, passenger_id);
         c1.executeQuery();
-        document.add(new Paragraph("Passenger Details", subtitleFont));
+        document.add(new Paragraph("User Details", subtitleFont));
         document.add(new Paragraph("Name: " + c1.getString(2), contentFont));
         document.add(new Paragraph("Email: " + c1.getString(3), contentFont));
         document.add(new Paragraph("Phone: " + c1.getString(4), contentFont));
@@ -61,6 +61,7 @@ public class PDFReceiptGenerator {
         ResultSet rs3 = p3.executeQuery();
         document.add(new Paragraph("Reservation Details", subtitleFont));
         while (rs3.next()) {
+            document.add(new Paragraph("Passenger Name: "+rs3.getString("passengerName"), contentFont));
             document.add(new Paragraph("Reservation ID: " + rs3.getInt("reservation_id"), contentFont));
             document.add(new Paragraph("Seat Numbers: " + rs3.getString("seat_number"), contentFont));
             document.add(new Paragraph("Reservation Date: " + rs3.getTimestamp("reservation_date"), contentFont));
@@ -181,7 +182,7 @@ public class PDFReceiptGenerator {
         while (rs.next()) {
             table.addCell(createCell(String.valueOf(rs.getInt("reservation_id")), contentFont));
             table.addCell(createCell(String.valueOf(rs.getInt("passenger_id")), contentFont));
-            table.addCell(createCell(rs.getString("name"), contentFont));
+            table.addCell(createCell(rs.getString("passengerName"), contentFont));
             table.addCell(createCell(rs.getString("email"), contentFont));
             table.addCell(createCell(rs.getString("phone"), contentFont));
             table.addCell(createCell(rs.getString("seat_number"), contentFont));

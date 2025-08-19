@@ -25,6 +25,7 @@ public class ReservationDAO {
         while (true) {
             boolean reservationStatus = false;
             ArrayList<Flight> flightList = flights;
+            ArrayList<String> passNames = new ArrayList<>();
 //          ================================== Select Flight ==================================
             System.out.print("\nWant to make a reservation? (y/n): ");
             char choice = sc.next().trim().toLowerCase().charAt(0);
@@ -34,14 +35,27 @@ public class ReservationDAO {
                 System.out.print("Enter number of seats to reserve: ");
                 int seats = sc.nextInt();
 //               ================================= Validate Seats ==================================
-                if (seats > 0) {
+                if (seats > 0 && seats <= 6) { // Assuming max 6 seats can be reserved at once
                     boolean flag = false;
 //                    ================================ Check Flight ID and Available Seats ==================================
                     for (int i = 0; i < flightList.size(); i++) {
                         if (flightList.get(i).getFlight_id() == flightId && flightList.get(i).getAvailable_seats() >= seats) {
                             flag = false;
+
+                            for (int j = 1; j <= seats; j++) {
+                                // Enter passenger name for each seat
+                                System.out.print("Enter name for passenger " + j + ": ");
+                                String name = sc.next().trim();
+                                if (name.matches("^[a-zA-Z\\s]+$")) {
+                                    passNames.add(name);
+                                } else {
+                                    System.out.println(App.red + "\nInvalid name! Please enter a valid name." + App.reset);
+                                    j--; // Decrement to re-enter the name for the same seat
+                                    continue;
+                                }
+                            }
 //                           ================================= Add Reservation ==================================
-                            reservationStatus = ReservationDAO.addReservation(flightList.get(i).getFlight_id(), p.getPassenger_id(), seats);
+                            reservationStatus = ReservationDAO.addReservation(flightList.get(i).getFlight_id(), p.getPassenger_id(), seats, passNames);
                             break;
                         } else {
                             flag = true;
@@ -55,8 +69,13 @@ public class ReservationDAO {
                 }
 //                ================================ Invalid Number of Seats ==================================
                 else {
-                    System.out.println(App.red + "\nInvalid number of seats! Please enter a positive number." + App.reset);
-                    continue;
+                    if (seats <= 0) {
+                        System.out.println(App.red + "\nInvalid number of seats! Please enter a positive number. " + App.reset);
+                        continue;
+                    } else {
+                        System.out.println(App.red + "\nYou can reserve a maximum of 6 seats at a time. Please try again." + App.reset);
+                        continue;
+                    }
                 }
             } else if (choice == 'n') {
                 return;
@@ -73,15 +92,21 @@ public class ReservationDAO {
         }
     }
 
-    public static boolean addReservation(int flightId, int passengerId, int seats) throws Exception {
+    public static boolean addReservation(int flightId, int passengerId, int seats, ArrayList<String> passNames) throws Exception {
         con.setAutoCommit(false);
         // insert reservation details into the reservations table
+        int j = 0;
         for (int i = 1; i <= seats; i++) {
-            String sql = "INSERT INTO reservations (flight_id, passenger_id, seat_number) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO reservations (flight_id, passenger_id, passengerName, seat_number) VALUES (?, ?, ?, ?)";
             PreparedStatement pst = con.prepareStatement(sql);
             pst.setInt(1, flightId);
             pst.setInt(2, passengerId);
-            pst.setString(3, generateSeatNumbers(flightId));
+            while (j <= seats - 1) {
+                pst.setString(3, passNames.get(j));
+                break;
+            }
+            j++;
+            pst.setString(4, generateSeatNumbers(flightId));
             if (pst.executeUpdate() > 0) {
                 continue;
             } else {
@@ -111,7 +136,7 @@ public class ReservationDAO {
                         // Commit the transaction
                         con.commit();
                         System.out.println(App.green + "\nReservation confirmed successfully." + App.reset);
-                        PDFReceiptGenerator.generateReceipt(flightId, passengerId, seats);
+                        PDFReceiptGenerator.generateReceipt(flightId, passengerId, seats); // Generate PDF receipt for the reservation
                         return true;
                     } else {
                         con.rollback();
@@ -186,6 +211,7 @@ public class ReservationDAO {
             System.out.println("Destination: " + pst1.getString(4) + "\n");
             while (crs.next()) {
                 seats++;
+                System.out.println("Passenger Name: " + crs.getString("passengerName"));
                 passId = crs.getInt("passenger_id"); // Get passenger ID for payment and PDF generation
                 System.out.println("Reservation ID: " + crs.getInt("reservation_id"));
                 System.out.println("Seat Number: " + crs.getString("seat_number"));
@@ -197,6 +223,43 @@ public class ReservationDAO {
             char choice = sc.next().trim().toLowerCase().charAt(0);
             if (choice == 'y') {
                 PDFReceiptGenerator.generateReceipt(flightId, passId, seats);
+            }
+            return true;
+        } else {
+            System.out.println(App.red + "\nNo reservations found for the given passenger name and flight ID." + App.reset);
+            return false;
+        }
+    }
+
+    public static boolean viewReservationForCancelReservation(String passengerName, int flightId) throws Exception {
+        String sql = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE passengers.name = ? AND reservations.flight_id = ? AND reservations.status = 'CONFIRMED'";
+        PreparedStatement pst = DBUtil.con.prepareStatement(sql);
+        pst.setString(1, passengerName);
+        pst.setInt(2, flightId);
+        ResultSet rs = pst.executeQuery();
+
+        // Create a CachedRowSet to hold the result set in memory
+        CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();
+        crs.populate(rs); // Copy all rows into memory
+
+        if (crs.size() > 0) {
+            System.out.println(App.green + "\nReservation Details\n-------------------\n" + App.reset);
+
+            // Get flight details
+            String sql1 = "CALL getFlight(?, ?, ?, ?, ?, ?)";
+            CallableStatement pst1 = DBUtil.con.prepareCall(sql1);
+            pst1.setInt(1, flightId);
+            pst1.executeQuery();
+            System.out.println("Name: " + passengerName);
+            System.out.println("Flight ID: " + flightId);
+            System.out.println("Flight Number: " + pst1.getString(2));
+            System.out.println("Departure: " + pst1.getString(3));
+            System.out.println("Destination: " + pst1.getString(4) + "\n");
+            while (crs.next()) {
+                System.out.println("Passenger Name: " + crs.getString("passengerName"));
+                System.out.println("Reservation ID: " + crs.getInt("reservation_id"));
+                System.out.println("Seat Number: " + crs.getString("seat_number"));
+                System.out.println("Reservation Date: " + crs.getString("reservation_date") + "\n");
             }
             return true;
         } else {
