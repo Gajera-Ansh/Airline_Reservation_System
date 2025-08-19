@@ -45,7 +45,7 @@ public class App {
             try {
                 choice = sc.nextInt();
             } catch (InputMismatchException e) {
-                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                System.out.println(red + "\nOnly Digits allowed" + reset);
                 sc.nextLine();
                 continue;
             }
@@ -114,7 +114,7 @@ public class App {
             try {
                 choice = sc.nextInt();
             } catch (InputMismatchException e) {
-                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                System.out.println(red + "\nOnly Digits allowed" + reset);
                 sc.nextLine();
                 continue;
             }
@@ -372,7 +372,7 @@ public class App {
             try {
                 choice = sc.nextInt();
             } catch (InputMismatchException e) {
-                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                System.out.println(red + "\nOnly Digits allowed" + reset);
                 sc.nextLine();
                 continue;
             }
@@ -400,64 +400,81 @@ public class App {
                 }
 //              ============================== User Registration ==================================
                 case 2 -> {
-                    System.out.print("\nEnter Name: ");
-                    sc.nextLine();
-                    String name = sc.nextLine().trim();
-                    if (!name.matches("^[a-zA-Z\\s]+$")) {
-                        System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
-                        continue;
+                    String name = "";
+                    while (true) {
+                        System.out.print("\nEnter Name: ");
+                        sc.nextLine();
+                        name = sc.nextLine().trim();
+                        if (!name.matches("^[a-zA-Z\\s]+$")) {
+                            System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
+                        } else {
+                            break;
+                        }
                     }
-                    System.out.print("Enter Email: ");
-                    String email = sc.next().trim();
-                    if (email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$")) {
-                        boolean emailExists = false;
-                        for (int i = 0; i < passengers.size(); i++) {
-                            if (passengers.get(i).getEmail().equals(email)) {
-                                System.out.println(red + "\nEmail already exists! Please use a different email." + reset);
-                                emailExists = true;
+
+                    String email = "";
+                    while (true) {
+                        System.out.print("Enter Email: ");
+                        email = sc.next().trim();
+                        if (email.matches("^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$")) {
+                            boolean emailExists = false;
+                            for (int i = 0; i < passengers.size(); i++) {
+                                if (passengers.get(i).getEmail().equals(email)) {
+                                    System.out.println(red + "\nEmail already exists! Please use a different email.\n" + reset);
+                                    emailExists = true;
+                                    break;
+                                }
+                            }
+                            if (emailExists) {
+                                continue;
+                            }
+                            break;
+                        } else {
+                            System.out.println(red + "\nInvalid email format!\n" + reset);
+                        }
+                    }
+
+                    String phone = "";
+                    while (true) {
+                        System.out.print("Enter Phone: ");
+                        phone = sc.next().trim();
+                        if (phone.matches("^\\d{10}$") && (phone.charAt(0) == '9' || phone.charAt(0) == '8' || phone.charAt(0) == '7' || phone.charAt(0) == '6')) {
+                            boolean phoneExists = false;
+                            for (int i = 0; i < passengers.size(); i++) {
+                                if (passengers.get(i).getPhone().equals(phone)) {
+                                    System.out.println(red + "\nPhone number already exists! Please use a different phone number.\n" + reset);
+                                    phoneExists = true;
+                                    break;
+                                }
+                            }
+                            if (phoneExists) {
+                                continue;
+                            }
+                            break;
+                        } else {
+                            System.out.println(red + "\nInvalid phone number! Please enter a 10-digit number.\n" + reset);
+                        }
+                    }
+
+                    String password = "";
+                    while (true) {
+                        System.out.print("Enter Password: ");
+                        password = sc.next();
+                        if (password.length() >= 6) {
+                            boolean hasAlpha = password.matches(".*a-zA-Z].*");
+                            boolean hasDigit = password.matches(".*\\d.*");
+                            boolean hasSpecialChar = password.matches(".*[_@#].*");
+                            int sum = (hasAlpha ? 1 : 0) + (hasDigit ? 1 : 0) + (hasSpecialChar ? 1 : 0);
+                            if (sum < 2) {
+                                System.out.println(red + "\nPassword must contain at least two of the following: letters, digits, or special characters (_@#)\n" + reset);
+                            } else {
                                 break;
                             }
+                        } else {
+                            System.out.println(red + "\nPassword must be at least 6 characters long!\n" + reset);
                         }
-                        if (emailExists) {
-                            continue;
-                        }
-                    } else {
-                        System.out.println(red + "\nInvalid email format!" + reset);
-                        continue;
                     }
-                    System.out.print("Enter Phone: ");
-                    String phone = sc.next().trim();
-                    if (phone.matches("^\\d{10}$")) {
-                        boolean phoneExists = false;
-                        for (int i = 0; i < passengers.size(); i++) {
-                            if (passengers.get(i).getPhone().equals(phone)) {
-                                System.out.println(red + "\nPhone number already exists! Please use a different phone number." + reset);
-                                phoneExists = true;
-                                break;
-                            }
-                        }
-                        if (phoneExists) {
-                            continue;
-                        }
-                    } else {
-                        System.out.println(red + "\nInvalid phone number! Please enter a 10-digit number." + reset);
-                        continue;
-                    }
-                    System.out.print("Enter Password: ");
-                    String password = sc.next();
-                    if (password.length() >= 6) {
-                        boolean hasAlpha = password.matches(".*a-zA-Z].*");
-                        boolean hasDigit = password.matches(".*\\d.*");
-                        boolean hasSpecialChar = password.matches(".*[_@#].*");
-                        int sum = (hasAlpha ? 1 : 0) + (hasDigit ? 1 : 0) + (hasSpecialChar ? 1 : 0);
-                        if (sum < 2) {
-                            System.out.println(red + "\nPassword must contain at least two of the following: letters, digits, or special characters (_@#)" + reset);
-                            continue;
-                        }
-                    } else {
-                        System.out.println(red + "\nPassword must be at least 6 characters long!" + reset);
-                        continue;
-                    }
+
                     Passenger newPassenger = new Passenger(0, name, email, phone, password);
                     if (PassengerDAO.addPassenger(newPassenger)) {
                         System.out.println(green + "\nRegistration successful! You can now login." + reset);
@@ -497,7 +514,7 @@ public class App {
             try {
                 choice = sc.nextInt();
             } catch (InputMismatchException e) {
-                System.out.println(red + "\nOnly Digits allowed"+ reset);
+                System.out.println(red + "\nOnly Digits allowed" + reset);
                 sc.nextLine();
                 continue;
             }
