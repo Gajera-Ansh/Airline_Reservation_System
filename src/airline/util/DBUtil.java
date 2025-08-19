@@ -2,6 +2,8 @@ package airline.util;
 
 import java.sql.*;
 
+import airline.App;
+
 public class DBUtil {
     public static final String URL = "jdbc:mysql://localhost:3306/airline_db";
     public static final String USER = "root";
@@ -15,9 +17,9 @@ public class DBUtil {
         } catch (SQLException _) {
         }
         if (con != null) {
-            System.out.println("Database connection established successfully.");
+            System.out.println(App.green + "Database connection established successfully." + App.reset);
         } else {
-            System.out.println("Failed to establish database connection.");
+            System.out.println(App.red + "Failed to establish database connection." + App.reset);
         }
     }
 }
