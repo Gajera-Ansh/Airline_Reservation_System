@@ -79,7 +79,7 @@ public class AdminDAO {
         }
 
         // Get reservation and passenger data who have booked seat
-        String sql1 = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE flight_id = " + flightId;
+        String sql1 = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE flight_id = " + flightId + " AND status = 'CONFIRMED'";
         ResultSet rs1 = st.executeQuery(sql1);
 
         CachedRowSet crs = RowSetProvider.newFactory().createCachedRowSet();

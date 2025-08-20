@@ -176,7 +176,7 @@ public class PDFReceiptGenerator {
             table.addCell(cell);
         }
 
-        String sql1 = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE flight_id = " + flightId;
+        String sql1 = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE flight_id = " + flightId + " AND status = 'CONFIRMED'";
         Statement st = DBUtil.con.createStatement();
         ResultSet rs = st.executeQuery(sql1);
         while (rs.next()) {
