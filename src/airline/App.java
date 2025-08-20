@@ -346,15 +346,12 @@ public class App {
                                 continue;
                             } else {
                                 System.out.println(red + "\nNo passengers found" + reset);
-                                continue;
                             }
                         } else {
                             System.out.println(red + "\nYou do not have permission to update this flight." + reset);
-                            continue;
                         }
                     } else {
                         System.out.println(red + "\nFlight not found! Please check the flight number." + reset);
-                        continue;
                     }
                 }
 //              ================================== Generate Flight Report ==========================

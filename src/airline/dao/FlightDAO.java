@@ -260,13 +260,17 @@ public class FlightDAO {
             System.out.print("Enter new departure time (yyyy-mm-dd hh:mm:ss): ");
             sc.nextLine();
             newDepartureTime = sc.nextLine().trim();
-            // Validate the new departure time
-            departureTime = LocalDateTime.parse(newDepartureTime, App.dateTimeFormatter);
-            if (departureTime.isAfter(LocalDateTime.now())) {
-                cst.setString(3, newDepartureTime);
-                break;
+            if (newDepartureTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                // Validate the new departure time
+                departureTime = LocalDateTime.parse(newDepartureTime, App.dateTimeFormatter);
+                if (departureTime.isAfter(LocalDateTime.now())) {
+                    cst.setString(3, newDepartureTime);
+                    break;
+                } else {
+                    System.out.println(App.red + "\nDeparture time must be in the future.\n" + App.reset);
+                }
             } else {
-                System.out.println(App.red + "\nDeparture time must be in the future." + App.reset);
+                System.out.println(App.red + "\nInvalid departure time format! Please use yyyy-MM-dd HH:mm:ss.\n" + App.reset);
             }
         }
 
@@ -277,13 +281,17 @@ public class FlightDAO {
             System.out.print("Enter new arrival time (yyyy-mm-dd hh:mm:ss): ");
             newArrivalTime = sc.nextLine().trim();
 
-            // Validate the new arrival time
-            arrivalTime = LocalDateTime.parse(newArrivalTime, App.dateTimeFormatter);
-            if (arrivalTime.isAfter(departureTime)) {
-                cst.setString(4, newArrivalTime);
-                break;
+            if (newArrivalTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                // Validate the new arrival time
+                arrivalTime = LocalDateTime.parse(newArrivalTime, App.dateTimeFormatter);
+                if (arrivalTime.isAfter(departureTime)) {
+                    cst.setString(4, newArrivalTime);
+                    break;
+                } else {
+                    System.out.println(App.red + "\nArrival time must be after departure time." + App.reset);
+                }
             } else {
-                System.out.println(App.red + "\nArrival time must be after departure time." + App.reset);
+                System.out.println(App.red + "\nInvalid arrival time format! Please use yyyy-MM-dd HH:mm:ss." + App.reset);
             }
         }
 
