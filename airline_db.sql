@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 19, 2025 at 05:07 PM
+-- Generation Time: Aug 20, 2025 at 09:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -88,8 +88,8 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `getPassenger` (IN `passId` INT(11),
     WHERE passengers.passenger_id = passId AND reservations.status = 'CONFIRMED' LIMIT 1;
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `getPayment` (IN `flightId` INT(11), IN `passId` INT(11), OUT `bill` DECIMAL(10,2), OUT `date` DATETIME)   BEGIN
-	SELECT amount, payment_time INTO bill, date FROM payments
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getPayment` (IN `flightId` INT(11), IN `passId` INT(11), OUT `bill` DECIMAL(10,2))   BEGIN
+	SELECT SUM(amount) INTO bill FROM payments
     WHERE passenger_id = passId AND flight_id = flightId AND payments.status = 'CONFIRMED';
 END$$
 
