@@ -335,11 +335,28 @@ public class ReservationDAO {
         } else if (choice == 'n') {
             con.setAutoCommit(false);
 
-            System.out.print("\nDo you want to cancel a specific reservation? (y/n): ");
+            System.out.print("\nDo you want to cancel any specific reservation? (y/n): ");
             char choice1 = sc.next().trim().toLowerCase().charAt(0);
             if (choice1 == 'y') {
                 System.out.print("\nEnter the reservation ID to cancel: ");
-                int reservationId = sc.nextInt();
+                int reservationId = 0;
+                try {
+                    reservationId = sc.nextInt();
+                } catch (InputMismatchException e) {
+                    System.out.println(App.red + "\nInvalid input! Please enter a valid reservation ID." + App.reset);
+                    sc.next(); // Clear the invalid input
+                    return false; // Exit the method to avoid further processing
+                }
+
+                String sqlCheck = "SELECT * FROM reservations WHERE reservation_id = ? AND flight_id = ? AND status = 'CONFIRMED'";
+                PreparedStatement pstCheck = con.prepareStatement(sqlCheck);
+                pstCheck.setInt(1, reservationId);
+                pstCheck.setInt(2, flightId);
+                ResultSet rsCheck = pstCheck.executeQuery();
+                if (!rsCheck.next()) {
+                    System.out.println(App.red + "\nNo confirmed reservation found with the given ID for the specified flight." + App.reset);
+                    return false; // Exit the method if no reservation found
+                }
 
                 int passId = 0;
                 // Get passenger ID based on the name
