@@ -175,7 +175,14 @@ public class ReservationDAO {
     public static String generateSeatNumbers(int flightId) throws Exception {
         String seatNum = "";
         int totalSeats = 0;
+
         ArrayList<String> seatList = new ArrayList<>();
+        String sql1 = "SELECT seat_number FROM reservations WHERE flight_id = " + flightId;
+        Statement st1 = DBUtil.con.createStatement();
+        ResultSet rs1 = st1.executeQuery(sql1);
+        while (rs1.next()) {
+            seatList.add(rs1.getString(1));
+        }
 
         String sql = "SELECT total_seats FROM flights WHERE flight_id = " + flightId;
         Statement st = DBUtil.con.createStatement();
@@ -189,6 +196,7 @@ public class ReservationDAO {
             char col = (char) ('A' + (int) (Math.random() * 6));
             seatNum = row + String.valueOf(col);
         } while (seatList.contains(seatNum));
+
         seatList.add(seatNum);
         seatNumbers.putIfAbsent(flightId, seatList);
         return seatNum;
