@@ -69,14 +69,13 @@ public class PDFReceiptGenerator {
         }
 
         // get payment details
-        String q4 = "{CALL getPayment(?, ?, ?, ?)}";
+        String q4 = "{CALL getPayment(?, ?, ?)}";
         CallableStatement c4 = DBUtil.con.prepareCall(q4);
         c4.setInt(1, flight_id);
         c4.setInt(2, passenger_id);
         c4.executeQuery();
         document.add(new Paragraph("Payment Details", subtitleFont));
         document.add(new Paragraph("Amount Paid: " + c4.getDouble(3), contentFont));
-        document.add(new Paragraph("Payment Date: " + c4.getTimestamp(4), contentFont));
         document.add(new Paragraph(" "));
 
         document.add(new Paragraph("Thank you! for choosing our Reservation System", subtitleFont));

@@ -309,7 +309,9 @@ public class FlightDAO {
                 totalSeats = sc.nextInt();
                 break;
             } catch (InputMismatchException e) {
-                System.out.println(App.red + "\nInvalid total seats! Please enter a valid number." + App.reset);
+                System.out.println(App.red + "\nInvalid total seats! Please enter a valid number.\n" + App.reset);
+                sc.next(); // Clear the invalid input
+                continue;
             }
         }
 
