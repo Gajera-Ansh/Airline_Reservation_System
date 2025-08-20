@@ -354,7 +354,7 @@ public class ReservationDAO {
                 pstCheck.setInt(2, flightId);
                 ResultSet rsCheck = pstCheck.executeQuery();
                 if (!rsCheck.next()) {
-                    System.out.println(App.red + "\nNo confirmed reservation found with the given ID for the specified flight." + App.reset);
+                    System.out.println(App.red + "\nNo confirmed reservation found with the given reservation ID " + App.reset);
                     return false; // Exit the method if no reservation found
                 }
 
