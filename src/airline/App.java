@@ -257,6 +257,8 @@ public class App {
                 }
 //              ================================== Remove Flight ===================================
                 case 2 -> {
+                    AdminDAO.viewFlightsForUpdateDelete(adminId); // View all flights
+
                     System.out.print("\nEnter flight number to remove: ");
                     String flightNumber = sc.next().trim();
                     boolean flightExists = false;
@@ -298,6 +300,8 @@ public class App {
                 }
 //              ================================== Update Flight Information ==========================
                 case 4 -> {
+                    AdminDAO.viewFlightsForUpdateDelete(adminId); // View all flights
+
                     System.out.print("\nEnter flight number to update: ");
                     String flightNumber = sc.next().trim().toUpperCase();
 
@@ -329,6 +333,8 @@ public class App {
                 }
 //              ================================== View Passenger List ==============================
                 case 5 -> {
+                    AdminDAO.viewFlightsForUpdateDelete(adminId); // View all flights
+
                     System.out.print("\nEnter flight number to view passenger list: ");
                     String flightNumber = sc.next().trim().toUpperCase();
 
@@ -356,6 +362,8 @@ public class App {
                 }
 //              ================================== Generate Flight Report ==========================
                 case 6 -> {
+                    AdminDAO.viewFlightsForUpdateDelete(adminId); // View all flights
+
                     System.out.print("\nEnter flight number to generate flight report: ");
                     String flightNumber = sc.next().trim().toUpperCase();
 

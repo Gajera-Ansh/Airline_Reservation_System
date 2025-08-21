@@ -68,6 +68,20 @@ public class AdminDAO {
         }
     }
 
+    public static void viewFlightsForUpdateDelete(int AdminId) throws Exception {
+        // Get all flights for the admin with the given AdminId
+        String sql = "SELECT * FROM flights WHERE admin_id = " + AdminId;
+        Statement st = DBUtil.con.createStatement();
+        ResultSet rs = st.executeQuery(sql);
+
+        // Print the flight details in a formatted manner
+        System.out.printf("\n%-10s %-15s %-15s %-15s %-25s %-25s %-13s %-17s %-10s\n", "Flight ID", "Flight Number", "Departure", "Destination", "Departure Time", "Arrival Time", "Total Seats", "Available Seats", "Price");
+        System.out.println("------------------------------------------------------------------------------------------------------------------------------------------------------------");
+        while (rs.next()) {
+            System.out.printf("%-10s %-15s %-15s %-15s %-25s %-25s %-13d %-17d ₹%-10.2f\n", rs.getInt(1), rs.getString(2), rs.getString(4), rs.getString(5), rs.getTimestamp(6), rs.getTimestamp(7), rs.getInt(8), rs.getInt(9), rs.getDouble(10));
+        }
+    }
+
     public static boolean viewPassengerList(String flightNumber) throws Exception {
 
         String sql = "SELECT * FROM flights WHERE flight_number = '" + flightNumber + "'";
