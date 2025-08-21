@@ -160,27 +160,30 @@ public class FlightDAO {
         ResultSet rs1 = st.executeQuery(sql);
         // If there are no confirmed reservations, delete the flight directly
         if (!rs1.next()) {
-            String sql2 = "{CALL updateForRemoveFlight(?)}";
-            CallableStatement cst = con.prepareCall(sql2);
-            cst.setInt(1, flightId);
-            int r = cst.executeUpdate();
-            if (r > 0) {
-                while (true) {
-                    System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
-                    char choice = sc.next().trim().toLowerCase().charAt(0);
-                    if (choice == 'y') {
-                        System.out.println("\nChanges\n");
+            while (true) {
+                System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
+                if (choice == 'y') {
+                    String sql2 = "{CALL updateForRemoveFlight(?)}";
+                    CallableStatement cst = con.prepareCall(sql2);
+                    cst.setInt(1, flightId);
+                    int r = cst.executeUpdate();
+                    if (r > 0) {
                         con.commit(); // Commit the transaction
                         return true;
-                    } else if (choice == 'n') {
+                    } else {
                         con.rollback(); // Rollback the transaction
                         return false;
-                    } else {
-                        con.rollback();
-                        System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
                     }
+                } else if (choice == 'n') {
+                    con.rollback(); // Rollback the transaction
+                    return false;
+                } else {
+                    System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+                    continue;
                 }
             }
+
         } else { // If there are confirmed reservations, ask for confirmation before deleting
 
             while (true) {
@@ -225,12 +228,10 @@ public class FlightDAO {
                     con.rollback(); // Rollback the transaction
                     return false;
                 } else {
-                    con.rollback();
                     System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
                 }
             }
         }
-        return false;
     }
 
     public static boolean updateFlight(String flightNumber) throws Exception {
@@ -378,7 +379,7 @@ public class FlightDAO {
                 cst1.setDouble(7, price);
                 cst1.executeUpdate();
 
-                while(true) {
+                while (true) {
                     System.out.print("\nAre you sure you want to update this flight? (y/n): ");
                     char choice = sc.next().trim().toLowerCase().charAt(0);
                     if (choice == 'y') {
@@ -421,7 +422,7 @@ public class FlightDAO {
                 cst2.setDouble(7, price);
                 cst2.executeUpdate();
 
-                while(true) {
+                while (true) {
                     System.out.println("\nAre you sure you want to update this flight? (y/n): ");
                     char choice = sc.next().trim().toLowerCase().charAt(0);
                     if (choice == 'y') {
