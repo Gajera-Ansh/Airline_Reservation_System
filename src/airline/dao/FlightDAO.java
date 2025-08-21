@@ -225,6 +225,7 @@ public class FlightDAO {
                     con.rollback(); // Rollback the transaction
                     return false;
                 } else {
+                    con.rollback();
                     System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
                 }
             }
