@@ -447,9 +447,9 @@ public class App {
 //              ============================== User Registration ==================================
                 case 2 -> {
                     String name = "";
+                    sc.nextLine();
                     while (true) {
                         System.out.print("\nEnter Name: ");
-                        sc.nextLine();
                         name = sc.nextLine().trim();
                         if (!name.matches("^[a-zA-Z\\s]+$")) {
                             System.out.println(red + "\nInvalid name! Please use only letters and spaces." + reset);
@@ -466,7 +466,7 @@ public class App {
                             boolean emailExists = false;
                             for (int i = 0; i < passengers.size(); i++) {
                                 if (passengers.get(i).getEmail().equals(email)) {
-                                    System.out.println(red + "\nEmail already exists! Please use a different email (Ex. xyz123@example.com).\n" + reset);
+                                    System.out.println(red + "\nEmail already exists! Please use a different email.\n" + reset);
                                     emailExists = true;
                                     break;
                                 }
@@ -476,7 +476,7 @@ public class App {
                             }
                             break;
                         } else {
-                            System.out.println(red + "\nInvalid email format!\n" + reset);
+                            System.out.println(red + "\nInvalid email format! (Ex. xyz123@example.com).\n" + reset);
                         }
                     }
 
@@ -507,7 +507,7 @@ public class App {
                         System.out.print("Enter Password: ");
                         password = sc.next();
                         if (password.length() >= 6) {
-                            boolean hasAlpha = password.matches(".*a-zA-Z].*");
+                            boolean hasAlpha = password.matches(".*[a-zA-Z].*");
                             boolean hasDigit = password.matches(".*\\d.*");
                             boolean hasSpecialChar = password.matches(".*[_@#].*");
                             int sum = (hasAlpha ? 1 : 0) + (hasDigit ? 1 : 0) + (hasSpecialChar ? 1 : 0);
