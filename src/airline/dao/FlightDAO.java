@@ -377,7 +377,7 @@ public class FlightDAO {
                 cst1.executeUpdate();
 
                 while(true) {
-                    System.out.println("\nAre you sure you want to update this flight? (y/n): ");
+                    System.out.print("\nAre you sure you want to update this flight? (y/n): ");
                     char choice = sc.next().trim().toLowerCase().charAt(0);
                     if (choice == 'y') {
                         con.commit();
