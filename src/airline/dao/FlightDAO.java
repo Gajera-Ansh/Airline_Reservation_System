@@ -110,22 +110,27 @@ public class FlightDAO {
                 pst.executeUpdate();
 
                 // Confirmation about flight addition
-                System.out.print("\nAre you sure you want to add this flight? (y/n): ");
-                char choice = sc.next().trim().toLowerCase().charAt(0);
-                if (choice == 'y') {
-                    con.commit(); // Commit the transaction
+                while (true) {
+                    System.out.print("\nAre you sure you want to add this flight? (y/n): ");
+                    char choice = sc.next().trim().toLowerCase().charAt(0);
+                    if (choice == 'y') {
+                        con.commit(); // Commit the transaction
 
-                    // Add a report for the new flight
-                    String sql3 = "SELECT flight_id FROM flights WHERE flight_number = '" + flight.getFlight_number() + "'";
-                    st.executeQuery(sql3);
-                    ResultSet rs1 = st.getResultSet();
-                    if (rs1.next()) {
-                        ReportDAO.addReport(rs1.getInt(1));
+                        // Add a report for the new flight
+                        String sql3 = "SELECT flight_id FROM flights WHERE flight_number = '" + flight.getFlight_number() + "'";
+                        st.executeQuery(sql3);
+                        ResultSet rs1 = st.getResultSet();
+                        if (rs1.next()) {
+                            ReportDAO.addReport(rs1.getInt(1));
+                        }
+                        con.commit();
+                        return true;
+                    } else if (choice == 'n') {
+                        con.rollback(); // Rollback the transaction
+                        return false;
+                    } else {
+                        System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
                     }
-                    con.commit();
-                } else {
-                    con.rollback(); // Rollback the transaction
-                    return false;
                 }
             } else {
                 System.out.println(App.red + "\nFlight already exists with the same details." + App.reset);
@@ -135,7 +140,6 @@ public class FlightDAO {
             System.out.println(App.red + "\nFlight with this flight number already exists." + App.reset);
             return false;
         }
-        return true;
     }
 
     public static boolean deleteFlight(String flightNumber) throws Exception {
@@ -161,58 +165,67 @@ public class FlightDAO {
             cst.setInt(1, flightId);
             int r = cst.executeUpdate();
             if (r > 0) {
-                System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
-                char choice = sc.next().trim().toLowerCase().charAt(0);
-                if (choice == 'y') {
-                    System.out.println("\nChanges\n");
-                    con.commit(); // Commit the transaction
-                    return true;
-                } else {
-                    con.rollback(); // Rollback the transaction
-                    return false;
+                while (true) {
+                    System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
+                    char choice = sc.next().trim().toLowerCase().charAt(0);
+                    if (choice == 'y') {
+                        System.out.println("\nChanges\n");
+                        con.commit(); // Commit the transaction
+                        return true;
+                    } else if (choice == 'n') {
+                        con.rollback(); // Rollback the transaction
+                        return false;
+                    } else {
+                        System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+                    }
                 }
             }
         } else { // If there are confirmed reservations, ask for confirmation before deleting
 
-            System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
-            char choice = sc.next().trim().toLowerCase().charAt(0);
+            while (true) {
 
-            if (choice == 'y') {
+                System.out.print("\nConfirm deletion of flight " + flightNumber + "? (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
 
-                // Notify passengers about the cancellation
-                String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
-                Statement st1 = con.createStatement();
-                ResultSet rs2 = st1.executeQuery(sql3);
-                while (rs2.next()) {
-                    FileWriter fw = new FileWriter("D://" + rs2.getString(2) + ".txt");
-                    fw.write("Subject: Flight Cancellation Notice\n\n");
-                    fw.write("Dear " + rs2.getString(1) + ",\n\n");
-                    String sql4 = "{CALL getFlight(?, ?, ?, ?, ?, ?)}";
-                    CallableStatement cst1 = con.prepareCall(sql4);
-                    cst1.setInt(1, flightId);
-                    cst1.executeQuery();
-                    fw.write("We regret to inform you that your flight with flight number " + flightNumber + " from " + cst1.getString(3) + " to " + cst1.getString(4) + " on " + cst1.getString(5) + " has been cancelled by the administrator.\n\n");
-                    fw.write("We apologize for any inconvenience this may cause and will process a full refund to your account.\n\n");
-                    fw.write("Thank you for your understanding.\n\n");
-                    fw.write("Best regards,\n\n");
-                    fw.write("Airline Management");
-                    fw.close();
-                }
+                if (choice == 'y') {
 
-                String sql5 = "{CALL updateForRemoveFlight(?)}";
-                CallableStatement cst2 = con.prepareCall(sql5);
-                cst2.setInt(1, flightId);
-                int r = cst2.executeUpdate();
-                if (r > 0) {
-                    con.commit(); // Commit the transaction
-                    return true;
-                } else {
+                    // Notify passengers about the cancellation
+                    String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
+                    Statement st1 = con.createStatement();
+                    ResultSet rs2 = st1.executeQuery(sql3);
+                    while (rs2.next()) {
+                        FileWriter fw = new FileWriter("D://" + rs2.getString(2) + ".txt");
+                        fw.write("Subject: Flight Cancellation Notice\n\n");
+                        fw.write("Dear " + rs2.getString(1) + ",\n\n");
+                        String sql4 = "{CALL getFlight(?, ?, ?, ?, ?, ?)}";
+                        CallableStatement cst1 = con.prepareCall(sql4);
+                        cst1.setInt(1, flightId);
+                        cst1.executeQuery();
+                        fw.write("We regret to inform you that your flight with flight number " + flightNumber + " from " + cst1.getString(3) + " to " + cst1.getString(4) + " on " + cst1.getString(5) + " has been cancelled by the administrator.\n\n");
+                        fw.write("We apologize for any inconvenience this may cause and will process a full refund to your account.\n\n");
+                        fw.write("Thank you for your understanding.\n\n");
+                        fw.write("Best regards,\n\n");
+                        fw.write("Airline Management");
+                        fw.close();
+                    }
+
+                    String sql5 = "{CALL updateForRemoveFlight(?)}";
+                    CallableStatement cst2 = con.prepareCall(sql5);
+                    cst2.setInt(1, flightId);
+                    int r = cst2.executeUpdate();
+                    if (r > 0) {
+                        con.commit(); // Commit the transaction
+                        return true;
+                    } else {
+                        con.rollback(); // Rollback the transaction
+                        return false;
+                    }
+                } else if (choice == 'n') {
                     con.rollback(); // Rollback the transaction
                     return false;
+                } else {
+                    System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
                 }
-            } else {
-                con.rollback(); // Rollback the transaction
-                return false;
             }
         }
         return false;
@@ -330,8 +343,7 @@ public class FlightDAO {
             try {
                 price = sc.nextDouble();
                 break;
-            }
-            catch (InputMismatchException e) {
+            } catch (InputMismatchException e) {
                 System.out.println(App.red + "\nInvalid price! Please enter a valid number." + App.reset);
                 sc.next(); // Clear the invalid input
             }
@@ -363,14 +375,19 @@ public class FlightDAO {
                 cst1.setInt(6, availableSeats);
                 cst1.setDouble(7, price);
                 cst1.executeUpdate();
-                System.out.println("\nAre you sure you want to update this flight? (y/n): ");
-                char choice = sc.next().trim().toLowerCase().charAt(0);
-                if (choice == 'y') {
-                    con.commit();
-                    return true;
-                } else {
-                    con.rollback();
-                    return false;
+
+                while(true) {
+                    System.out.println("\nAre you sure you want to update this flight? (y/n): ");
+                    char choice = sc.next().trim().toLowerCase().charAt(0);
+                    if (choice == 'y') {
+                        con.commit();
+                        return true;
+                    } else if (choice == 'n') {
+                        con.rollback();
+                        return false;
+                    } else {
+                        System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+                    }
                 }
             } else {  // If there are confirmed reservations, notify passengers
                 String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
@@ -401,16 +418,21 @@ public class FlightDAO {
                 cst2.setInt(6, availableSeats);
                 cst2.setDouble(7, price);
                 cst2.executeUpdate();
-                System.out.println("\nAre you sure you want to update this flight? (y/n): ");
-                char choice = sc.next().trim().toLowerCase().charAt(0);
-                if (choice == 'y') {
-                    con.commit();
-                    fw.close();
 
-                    return true;
-                } else {
-                    con.rollback();
-                    return false;
+                while(true) {
+                    System.out.println("\nAre you sure you want to update this flight? (y/n): ");
+                    char choice = sc.next().trim().toLowerCase().charAt(0);
+                    if (choice == 'y') {
+                        con.commit();
+                        fw.close();
+
+                        return true;
+                    } else if (choice == 'n') {
+                        con.rollback();
+                        return false;
+                    } else {
+                        System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+                    }
                 }
             }
         } else {

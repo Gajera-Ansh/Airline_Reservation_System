@@ -53,15 +53,19 @@ public class AdminDAO {
         if (flights.size() > 0) {
 
             // Prompt the user to download the flight list as a PDF
-            System.out.print("\nYou want to download the PDF of this flight list? (y/n): ");
-            char choice = sc.next().trim().toLowerCase().charAt(0);
-            if (choice == 'y') {
+            while (true) {
+                System.out.print("\nYou want to download the PDF of this flight list? (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
+                if (choice == 'y') {
 
-                // Generate the PDF for all flights
-                PDFReceiptGenerator.getAllFlights(flights);
-                return;
-            } else {
-                return;
+                    // Generate the PDF for all flights
+                    PDFReceiptGenerator.getAllFlights(flights);
+                    return;
+                } else if (choice == 'n') {
+                    return;
+                } else {
+                    System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+                }
             }
         } else {
             return;
@@ -108,13 +112,17 @@ public class AdminDAO {
                 System.out.printf("%-15s %-15s %-20s %-20s %-15s %-15s\n", crs.getInt("reservation_id"), crs.getInt("passenger_id"), crs.getString("passengerName"), crs.getString("email"), crs.getString("phone"), crs.getString("seat_number"));
             }
 
-            System.out.print("\nDo you want to download the pdf (y/n): ");
-            char choice = sc.next().trim().toLowerCase().charAt(0);
-            if (choice == 'y') {
-                PDFReceiptGenerator.passengerPDF(flightNumber, flightId); // Generate PDF of passenger list
-                return true;
-            } else {
-                return true;
+            while (true) {
+                System.out.print("\nDo you want to download the pdf (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
+                if (choice == 'y') {
+                    PDFReceiptGenerator.passengerPDF(flightNumber, flightId); // Generate PDF of passenger list
+                    return true;
+                } else if (choice == 'n') {
+                    return true;
+                } else {
+                    System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+                }
             }
         } else {
             return false;
@@ -139,14 +147,18 @@ public class AdminDAO {
             System.out.println("Report updated on: " + rs1.getString("report_date"));
             System.out.println("Report generated on: " + LocalDateTime.now().format(App.dateTimeFormatter));
         }
-        System.out.print("\nDo you want to download the PDF (y/n): ");
-        char choice = sc.next().trim().toLowerCase().charAt(0);
-        if (choice == 'y') {
-            PDFReceiptGenerator.generateReport(flightNumber, flightId);
-            return;
-        } else {
-            return;
-        }
 
+        while (true) {
+            System.out.print("\nDo you want to download the PDF (y/n): ");
+            char choice = sc.next().trim().toLowerCase().charAt(0);
+            if (choice == 'y') {
+                PDFReceiptGenerator.generateReport(flightNumber, flightId);
+                return;
+            } else if (choice == 'n') {
+                return;
+            } else {
+                System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+            }
+        }
     }
 }

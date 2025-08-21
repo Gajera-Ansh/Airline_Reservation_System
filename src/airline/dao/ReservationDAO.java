@@ -93,7 +93,7 @@ public class ReservationDAO {
             } else if (choice == 'n') {
                 return;
             } else {
-                System.out.println(App.red + "\nInvalid choice! Please try again." + App.reset);
+                System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
                 continue;
             }
 //            ================================ Reservation Confirmation ==================================
@@ -165,8 +165,7 @@ public class ReservationDAO {
                 System.out.println(App.red + "\nReservation cancelled." + App.reset);
                 return false;
             } else {
-                System.out.println(App.red + "\nInvalid choice. Reservation cancelled." + App.reset);
-                con.rollback();
+                System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
                 continue;
             }
         }
@@ -424,10 +423,10 @@ public class ReservationDAO {
             } else if (choice1 == 'n') {
                 System.out.println(App.red + "\nReservation cancellation aborted." + App.reset);
             } else {
-                System.out.println(App.red + "\nInvalid choice. Reservation cancellation aborted." + App.reset);
+                System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
             }
         } else {
-            System.out.println(App.red + "\nInvalid choice. Reservation cancellation aborted." + App.reset);
+            System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
         }
         return false;
     }
