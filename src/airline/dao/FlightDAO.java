@@ -272,9 +272,9 @@ public class FlightDAO {
 
         String newDepartureTime = "";
         LocalDateTime departureTime = null;
+        sc.nextLine();
         while (true) {
             System.out.print("Enter new departure time (yyyy-mm-dd hh:mm:ss): ");
-            sc.nextLine();
             newDepartureTime = sc.nextLine().trim();
             if (newDepartureTime.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
                 // Validate the new departure time

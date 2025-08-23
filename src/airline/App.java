@@ -161,9 +161,9 @@ public class App {
                         }
                     }
 
+                    sc.nextLine();
                     while (true) {
                         System.out.print("Enter departure time (yyyy-MM-dd HH:mm:ss): ");
-                        sc.nextLine();
                         departureTime = sc.nextLine().trim();
 
                         // Validate departure time format
