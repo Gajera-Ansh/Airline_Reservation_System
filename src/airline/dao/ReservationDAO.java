@@ -201,7 +201,7 @@ public class ReservationDAO {
         return seatNum;
     }
 
-    public static boolean viewReservations(String passengerName, int flightId) throws Exception {
+    public static void viewReservations(String passengerName, int flightId) throws Exception {
 
         // Query to get reservations details for the given passenger name and flight ID
         String sql = "SELECT * FROM reservations INNER JOIN passengers ON reservations.passenger_id = passengers.passenger_id WHERE passengers.name = ? AND reservations.flight_id = ? AND reservations.status = 'CONFIRMED'";
@@ -238,16 +238,21 @@ public class ReservationDAO {
                 System.out.println("Reservation Date: " + crs.getString("reservation_date") + "\n");
             }
 
-            // Ask user if they want to download the PDF receipt
-            System.out.print("\nYou want to download PDF (y/n): ");
-            char choice = sc.next().trim().toLowerCase().charAt(0);
-            if (choice == 'y') {
-                PDFReceiptGenerator.generateReceipt(flightId, passId, seats);
+            while (true) {
+                // Ask user if they want to download the PDF receipt
+                System.out.print("\nYou want to download PDF (y/n): ");
+                char choice = sc.next().trim().toLowerCase().charAt(0);
+                if (choice == 'y') {
+                    PDFReceiptGenerator.generateReceipt(flightId, passId, seats);
+                    break;
+                } else if (choice == 'n') {
+                    break;
+                } else {
+                    System.out.println(App.red + "\nInvalid choice. Please enter 'y' or 'n'." + App.reset);
+                }
             }
-            return true;
         } else {
             System.out.println(App.red + "\nNo reservations found for the given passenger name and flight ID." + App.reset);
-            return false;
         }
     }
 
