@@ -45,7 +45,6 @@ Contributions are welcome! Please fork the repository and submit a pull request 
 ## Contact
 
 For questions or support, please open an issue or contact [Gajera-Ansh](https://github.com/Gajera-Ansh).
-
 LinkedIn: www.linkedin.com/in/ansh-gajera-4646b9354
 ---
 
