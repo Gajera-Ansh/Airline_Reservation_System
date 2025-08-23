@@ -26,7 +26,7 @@ Welcome to the **Airline Reservation System** repository! This project is design
    ```
 2. **Install dependencies**
    ```sh
-   Download XAMPP: https://www.apachefriends.org/download.html
+   https://www.apachefriends.org/download.html
    ```
 3. **Setup the database**
    - Airline_db.sql
