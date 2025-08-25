@@ -33,8 +33,17 @@ Welcome to the **Airline Reservation System** repository! This project is design
   
 4. **For update flights date**
    - <img width="1353" height="362" alt="image" src="https://github.com/user-attachments/assets/6a445705-c2db-4c04-aaab-ca1b104ea5a3" />
-   - uncomment last two line then run code it will update date by one day 
+   - uncomment last two line then run code it will update date by one day
 
+5. **For get mail on your gmail account**
+   - **PaymentDAO**
+   - <img width="659" height="263" alt="image" src="https://github.com/user-attachments/assets/2afbd511-ffdb-4023-b173-3fb6f39e7eb4" />
+
+   - **FlightDAO**
+   - <img width="1343" height="403" alt="image" src="https://github.com/user-attachments/assets/b59153cd-edf4-473b-889f-67db37f76818" />
+   - <img width="1340" height="534" alt="image" src="https://github.com/user-attachments/assets/269251cc-bbe0-4203-8110-7377906d0790" />
+
+   - enter your gmail at **-----your email address------**
 
 ## Usage
 
