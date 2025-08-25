@@ -43,7 +43,7 @@ Welcome to the **Airline Reservation System** repository! This project is design
    - <img width="1343" height="403" alt="image" src="https://github.com/user-attachments/assets/b59153cd-edf4-473b-889f-67db37f76818" />
    - <img width="1340" height="534" alt="image" src="https://github.com/user-attachments/assets/269251cc-bbe0-4203-8110-7377906d0790" />
 
-   - enter your gmail at **-----your email address------**
+   - enter your gmail at **"-----your email address------"**
 
 ## Usage
 
