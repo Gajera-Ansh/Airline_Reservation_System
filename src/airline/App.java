@@ -7,13 +7,10 @@ import airline.util.*;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.InputMismatchException;
-import java.util.InvalidPropertiesFormatException;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class App {
