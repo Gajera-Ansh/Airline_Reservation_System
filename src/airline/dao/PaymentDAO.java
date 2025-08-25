@@ -3,10 +3,12 @@ package airline.dao;
 import airline.App;
 import airline.util.DBUtil;
 
+import java.util.Properties;
+import javax.mail.*;
+import javax.mail.internet.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -33,8 +35,6 @@ public class PaymentDAO {
         System.out.print("\nPress Enter after payment is done.");
         sc.nextLine(); // Wait for user to press Enter
 
-//        ========== Password Generation ==========
-        FileWriter fw = new FileWriter("D://pass.txt");
         int r = (int) (Math.random() * 1000);
         String pass = r + "";
         for (int j = 0; j < 5; j++) {
@@ -42,13 +42,10 @@ public class PaymentDAO {
             pass = pass + c;
         }
 
-        // Write the password to the file
-        fw.write(pass);
-        fw.close();
+        PaymentDAO.getDetails(pass); // Get Email
 
-        File f2 = new File("D://pass.txt");
-        System.out.print("\nEnter the password (which is print in pass.txt file " + App.green + f2.getAbsolutePath() + App.reset + ") to confirm payment: ");
-        String inputPass = sc.nextLine().trim();
+        System.out.print("\nEnter password which is sent to your email address: ");
+        String inputPass = sc.next().trim();
         if (inputPass.equals(pass)) {
 
             // Update payment database
@@ -59,6 +56,62 @@ public class PaymentDAO {
             return false;
         }
         return true;
+    }
+
+    public static void sendEmail(String to, String from, String password, String subject, String body) {
+        // SMTP server configuration
+        String host = "smtp.gmail.com"; // For Gmail
+        int port = 587;
+
+        Properties properties = new Properties();
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.port", port);
+        properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+        // Get the Session object
+        Session session = Session.getInstance(properties, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(from, password);
+            }
+        });
+
+        try {
+            // Create a default MimeMessage object
+            Message message = new MimeMessage(session);
+
+            // Set From: header field
+            message.setFrom(new InternetAddress(from));
+
+            // Set To: header field
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+
+            // Set Subject: header field
+            message.setSubject(subject);
+
+            // Set the actual message
+            message.setText(body);
+
+            // Send message
+            Transport.send(message);
+
+            System.out.println(App.green + "\nEmail sent successfully!" + App.reset);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void getDetails(String pass) {
+        // Example usage
+        String to = "gajeraansh4227@gmail.com";
+        String from = "anshcheck4227@gmail.com";
+        String password = "byfr qckt oyrk pohc"; // Use app password for Gmail
+        String subject = "Password for Payment Confirmation";
+        String body = "Your password is: " + pass;
+
+        sendEmail(to, from, password, subject, body);
     }
 
     public static void addPayment(int passengerId, int flightId, int seats) throws Exception {

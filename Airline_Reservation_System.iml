@@ -13,5 +13,6 @@
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="library" name="mysql-connector-j-9.4.1" level="project" />
     <orderEntry type="library" name="itextpdf.maven.itextdoc" level="project" />
+    <orderEntry type="library" name="sun.mail.javax" level="project" />
   </component>
 </module>
