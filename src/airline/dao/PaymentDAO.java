@@ -105,7 +105,7 @@ public class PaymentDAO {
 
     public static void getDetails(String pass) {
         // Example usage
-        String to = "gajeraansh4227@gmail.com";
+        String to = "------your email address------";
         String from = "anshcheck4227@gmail.com";
         String password = "byfr qckt oyrk pohc"; // Use app password for Gmail
         String subject = "Password for Payment Confirmation";

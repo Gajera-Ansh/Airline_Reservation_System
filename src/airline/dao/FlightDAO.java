@@ -279,7 +279,7 @@ public class FlightDAO {
 
     public static void getDetailsForDeleteFlight(String name, String flightNumber, String departure, String destination, String depTime) {
         // Example usage
-        String to = "gajeraansh4227@gmail.com";
+        String to = "------your email address------";
         String from = "anshcheck4227@gmail.com";
         String password = "byfr qckt oyrk pohc"; // Use app password for Gmail
         String subject = "Flight Cancellation Notice";
@@ -494,7 +494,7 @@ public class FlightDAO {
     public static void getDetailsForUpdateFlight(String name, String flightNumber, String departure, String destination, String depTime, String newFlightNumber,
                                                  String newDepartureTime, String newArrivalTime) {
         // Example usage
-        String to = "gajeraansh4227@gmail.com";
+        String to = "------your email address------";
         String from = "anshcheck4227@gmail.com";
         String password = "byfr qckt oyrk pohc"; // Use app password for Gmail
         String subject = "Flight Update Notice";
