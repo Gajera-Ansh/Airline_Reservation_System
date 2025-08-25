@@ -206,7 +206,9 @@ public class FlightDAO {
                         CallableStatement cst1 = con.prepareCall(sql4);
                         cst1.setInt(1, flightId);
                         cst1.executeQuery();
-                        FlightDAO.getDetails(rs2.getString(1), cst1.getString(2), cst1.getString(3), cst1.getString(4), cst1.getString(5));
+
+                        // Sending email to passengers about the cancellation
+                        FlightDAO.getDetailsForDeleteFlight(rs2.getString(1), cst1.getString(2), cst1.getString(3), cst1.getString(4), cst1.getString(5));
                     }
 
                     String sql5 = "{CALL updateForRemoveFlight(?)}";
@@ -275,7 +277,7 @@ public class FlightDAO {
         }
     }
 
-    public static void getDetails(String name, String flightNumber, String departure, String destination, String depTime) {
+    public static void getDetailsForDeleteFlight(String name, String flightNumber, String departure, String destination, String depTime) {
         // Example usage
         String to = "gajeraansh4227@gmail.com";
         String from = "anshcheck4227@gmail.com";
@@ -317,7 +319,7 @@ public class FlightDAO {
             if (newFlightNumber.matches("^[A-Z]{2,3}\\d{1,4}$")) {
                 break;
             } else {
-                System.out.println(App.red + "\nInvalid flight number! Please use the format ABC1234." + App.reset);
+                System.out.println(App.red + "\nInvalid flight number! Please use the format ABC1234.\n" + App.reset);
                 continue;
             }
         }
@@ -361,10 +363,10 @@ public class FlightDAO {
                     cst.setString(4, newArrivalTime);
                     break;
                 } else {
-                    System.out.println(App.red + "\nArrival time must be after departure time." + App.reset);
+                    System.out.println(App.red + "\nArrival time must be after departure time.\n" + App.reset);
                 }
             } else {
-                System.out.println(App.red + "\nInvalid arrival time format! Please use yyyy-MM-dd HH:mm:ss." + App.reset);
+                System.out.println(App.red + "\nInvalid arrival time format! Please use yyyy-MM-dd HH:mm:ss.\n" + App.reset);
             }
         }
 
@@ -404,7 +406,7 @@ public class FlightDAO {
                 price = sc.nextDouble();
                 break;
             } catch (InputMismatchException e) {
-                System.out.println(App.red + "\nInvalid price! Please enter a valid number." + App.reset);
+                System.out.println(App.red + "\nInvalid price! Please enter a valid number.\n" + App.reset);
                 sc.next(); // Clear the invalid input
             }
         }
@@ -424,22 +426,22 @@ public class FlightDAO {
             // If there are no confirmed reservations, update the flight directly
             if (!(crs.size() > 0)) {
 
-                // Update the flight details
-                String sql3 = "{CALL updateFlight(?, ?, ?, ?, ?, ?, ?)}";
-                CallableStatement cst1 = con.prepareCall(sql3);
-                cst1.setInt(1, flightId);
-                cst1.setString(2, newFlightNumber);
-                cst1.setString(3, newDepartureTime);
-                cst1.setString(4, newArrivalTime);
-                cst1.setInt(5, totalSeats);
-                cst1.setInt(6, availableSeats);
-                cst1.setDouble(7, price);
-                cst1.executeUpdate();
-
                 while (true) {
                     System.out.print("\nAre you sure you want to update this flight? (y/n): ");
                     char choice = sc.next().trim().toLowerCase().charAt(0);
                     if (choice == 'y') {
+
+                        // Update the flight details
+                        String sql3 = "{CALL updateFlight(?, ?, ?, ?, ?, ?, ?)}";
+                        CallableStatement cst1 = con.prepareCall(sql3);
+                        cst1.setInt(1, flightId);
+                        cst1.setString(2, newFlightNumber);
+                        cst1.setString(3, newDepartureTime);
+                        cst1.setString(4, newArrivalTime);
+                        cst1.setInt(5, totalSeats);
+                        cst1.setInt(6, availableSeats);
+                        cst1.setDouble(7, price);
+                        cst1.executeUpdate();
                         con.commit();
                         return true;
                     } else if (choice == 'n') {
@@ -450,42 +452,30 @@ public class FlightDAO {
                     }
                 }
             } else {  // If there are confirmed reservations, notify passengers
-                String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
-                ResultSet rs2 = st.executeQuery(sql3);
-                FileWriter fw = null;
-                while (rs2.next()) {
-                    fw = new FileWriter("D://" + rs2.getString(2) + ".txt");
-                    fw.write("Subject: Flight Update Notice\n\n");
-                    fw.write("Dear " + rs2.getString(1) + ",\n\n");
-                    fw.write("We regret to inform you that the flight " + flightNumber + " from " + departure + " to " + destination + " on " + depTime + " has been updated by the administrator.\n\n");
-                    fw.write("New Flight Details:\n");
-                    fw.write("Flight Number: " + newFlightNumber + "\n");
-                    fw.write("Departure: " + departure + "\n");
-                    fw.write("Destination: " + destination + "\n");
-                    fw.write("Departure Time: " + newDepartureTime + "\n");
-                    fw.write("Arrival Time: " + newArrivalTime + "\n\n");
-                    fw.write("Thank you for your understanding.\n\n");
-                    fw.write("Best regards,\n");
-                    fw.write("Airline Management");
-                }
-                String sql4 = "{CALL updateFlight(?, ?, ?, ?, ?, ?, ?)}";
-                CallableStatement cst2 = con.prepareCall(sql4);
-                cst2.setInt(1, flightId);
-                cst2.setString(2, newFlightNumber);
-                cst2.setString(3, newDepartureTime);
-                cst2.setString(4, newArrivalTime);
-                cst2.setInt(5, totalSeats);
-                cst2.setInt(6, availableSeats);
-                cst2.setDouble(7, price);
-                cst2.executeUpdate();
-
                 while (true) {
-                    System.out.println("\nAre you sure you want to update this flight? (y/n): ");
+                    System.out.print("\nAre you sure you want to update this flight? (y/n): ");
                     char choice = sc.next().trim().toLowerCase().charAt(0);
-                    if (choice == 'y') {
-                        con.commit();
-                        fw.close();
 
+                    if (choice == 'y') {
+                        String sql3 = "SELECT DISTINCT p.name, p.email FROM passengers p JOIN reservations r ON p.passenger_id = r.passenger_id WHERE r.flight_id = " + flightId + " AND r.status = 'CONFIRMED'";
+                        ResultSet rs2 = st.executeQuery(sql3);
+                        while (rs2.next()) {
+                            // Sending email to passengers about the update
+                            FlightDAO.getDetailsForUpdateFlight(rs2.getString(1), flightNumber, departure, destination, depTime, newFlightNumber, newDepartureTime, newArrivalTime);
+                        }
+
+                        // Update the flight details
+                        String sql4 = "{CALL updateFlight(?, ?, ?, ?, ?, ?, ?)}";
+                        CallableStatement cst2 = con.prepareCall(sql4);
+                        cst2.setInt(1, flightId);
+                        cst2.setString(2, newFlightNumber);
+                        cst2.setString(3, newDepartureTime);
+                        cst2.setString(4, newArrivalTime);
+                        cst2.setInt(5, totalSeats);
+                        cst2.setInt(6, availableSeats);
+                        cst2.setDouble(7, price);
+                        cst2.executeUpdate();
+                        con.commit();
                         return true;
                     } else if (choice == 'n') {
                         con.rollback();
@@ -499,5 +489,27 @@ public class FlightDAO {
             System.out.println(App.red + "\nFlight already exists with the same details." + App.reset);
             return false;
         }
+    }
+
+    public static void getDetailsForUpdateFlight(String name, String flightNumber, String departure, String destination, String depTime, String newFlightNumber,
+                                                 String newDepartureTime, String newArrivalTime) {
+        // Example usage
+        String to = "gajeraansh4227@gmail.com";
+        String from = "anshcheck4227@gmail.com";
+        String password = "byfr qckt oyrk pohc"; // Use app password for Gmail
+        String subject = "Flight Update Notice";
+        String body = "Dear: " + name + "\n\n" +
+                "We regret to inform you that your flight with flight number " + flightNumber + " from " + departure + " to " + destination + " on " + depTime + " has been updated by the administrator.\n\n" +
+                "New Flight Details:\n" +
+                "Flight Number: " + newFlightNumber + "\n" +
+                "Departure: " + departure + "\n" +
+                "Destination: " + destination + "\n" +
+                "Departure Time: " + newDepartureTime + "\n" +
+                "Arrival Time: " + newArrivalTime + "\n\n" +
+                "Thank you for your understanding.\n\n" +
+                "Best regards,\n" +
+                "Airline Management";
+
+        sendEmail(to, from, password, subject, body);
     }
 }
