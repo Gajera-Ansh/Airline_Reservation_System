@@ -5,6 +5,9 @@ import airline.ds.ArrayList;
 import airline.model.Flight;
 import airline.util.DBUtil;
 
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetProvider;
 import java.io.FileWriter;
@@ -12,6 +15,7 @@ import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.InputMismatchException;
+import java.util.Properties;
 import java.util.Scanner;
 
 public class FlightDAO {
@@ -198,19 +202,11 @@ public class FlightDAO {
                     Statement st1 = con.createStatement();
                     ResultSet rs2 = st1.executeQuery(sql3);
                     while (rs2.next()) {
-                        FileWriter fw = new FileWriter("D://" + rs2.getString(2) + ".txt");
-                        fw.write("Subject: Flight Cancellation Notice\n\n");
-                        fw.write("Dear " + rs2.getString(1) + ",\n\n");
                         String sql4 = "{CALL getFlight(?, ?, ?, ?, ?, ?)}";
                         CallableStatement cst1 = con.prepareCall(sql4);
                         cst1.setInt(1, flightId);
                         cst1.executeQuery();
-                        fw.write("We regret to inform you that your flight with flight number " + flightNumber + " from " + cst1.getString(3) + " to " + cst1.getString(4) + " on " + cst1.getString(5) + " has been cancelled by the administrator.\n\n");
-                        fw.write("We apologize for any inconvenience this may cause and will process a full refund to your account.\n\n");
-                        fw.write("Thank you for your understanding.\n\n");
-                        fw.write("Best regards,\n\n");
-                        fw.write("Airline Management");
-                        fw.close();
+                        FlightDAO.getDetails(rs2.getString(1), cst1.getString(2), cst1.getString(3), cst1.getString(4), cst1.getString(5));
                     }
 
                     String sql5 = "{CALL updateForRemoveFlight(?)}";
@@ -232,6 +228,67 @@ public class FlightDAO {
                 }
             }
         }
+    }
+
+    public static void sendEmail(String to, String from, String password, String subject, String body) {
+        // SMTP server configuration
+        String host = "smtp.gmail.com"; // For Gmail
+        int port = 587;
+
+        Properties properties = new Properties();
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.smtp.host", host);
+        properties.put("mail.smtp.port", port);
+        properties.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+        // Get the Session object
+        Session session = Session.getInstance(properties, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(from, password);
+            }
+        });
+
+        try {
+            // Create a default MimeMessage object
+            Message message = new MimeMessage(session);
+
+            // Set From: header field
+            message.setFrom(new InternetAddress(from));
+
+            // Set To: header field
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+
+            // Set Subject: header field
+            message.setSubject(subject);
+
+            // Set the actual message
+            message.setText(body);
+
+            // Send message
+            Transport.send(message);
+
+            System.out.println(App.green + "\nEmail sent successfully!" + App.reset);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void getDetails(String name, String flightNumber, String departure, String destination, String depTime) {
+        // Example usage
+        String to = "gajeraansh4227@gmail.com";
+        String from = "anshcheck4227@gmail.com";
+        String password = "byfr qckt oyrk pohc"; // Use app password for Gmail
+        String subject = "Flight Cancellation Notice";
+        String body = "Dear: " + name + "\n\n" +
+                "We regret to inform you that your flight with flight number " + flightNumber + " from " + departure + " to " + destination + " on " + depTime + " has been cancelled by the administrator.\n\n" +
+                "We apologize for any inconvenience this may cause and will process a full refund to your account.\n\n" +
+                "Thank you for your understanding.\n\n" +
+                "Best regards,\n" +
+                "Airline Management";
+
+        sendEmail(to, from, password, subject, body);
     }
 
     public static boolean updateFlight(String flightNumber) throws Exception {
