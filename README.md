@@ -37,13 +37,15 @@ Welcome to the **Airline Reservation System** repository! This project is design
 
 5. **For get mail on your gmail account**
    - **PaymentDAO**
-   - <img width="659" height="263" alt="image" src="https://github.com/user-attachments/assets/2afbd511-ffdb-4023-b173-3fb6f39e7eb4" />
+   - <img width="535" height="254" alt="image" src="https://github.com/user-attachments/assets/1a852ddf-8efb-4841-b718-a891537c0861" />
+
 
    - **FlightDAO**
-   - <img width="1343" height="403" alt="image" src="https://github.com/user-attachments/assets/b59153cd-edf4-473b-889f-67db37f76818" />
-   - <img width="1340" height="534" alt="image" src="https://github.com/user-attachments/assets/269251cc-bbe0-4203-8110-7377906d0790" />
+   - <img width="1334" height="385" alt="image" src="https://github.com/user-attachments/assets/8b3772cb-f565-4ec4-a61e-d93f6b7c0119" />
 
-   - enter your gmail at **"-----your email address------"**
+   - <img width="1347" height="534" alt="image" src="https://github.com/user-attachments/assets/a76af1a3-31f4-4473-8ee4-bb79321a9afd" />
+
+   - Enter your gmail details for **to**, **from** and **password**
 
 ## Usage
 
