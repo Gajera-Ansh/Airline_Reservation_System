@@ -16,7 +16,7 @@ Welcome to the **Airline Reservation System** repository! This project is design
 
 - **Programming Language:** Java
 - **Database:** MySQL
-- **Frameworks/Libraries:** mysql-connector-j-9.4.0, itextpdf.maven.itextdoc
+- **Frameworks/Libraries:** mysql-connector-j-9.4.0, itextpdf.maven.itextdoc, com.sun.mail:javax.mail:1.6.2
 
 ## Getting Started
 
