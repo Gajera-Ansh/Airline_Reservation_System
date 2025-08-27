@@ -46,12 +46,13 @@ Welcome to the **Airline Reservation System** repository! This project is design
    - <img width="1347" height="534" alt="image" src="https://github.com/user-attachments/assets/a76af1a3-31f4-4473-8ee4-bb79321a9afd" />
 
    - **Steps to generate App Password**:
-   - Go to Google Account – Security.
-   - Under "Signing in to Google", enable 2-Step Verification (if not already enabled).
-   - Once enabled, you’ll see an option called App Passwords if you are not able to see this option then directly search.
-   - Select Mail as the app.
-   - Click Generate → Google will give you a 16-character password.
-   - Copy this password and use it in your Java code instead of your normal Gmail password.
+   -  1. Go to Google Account – Security.
+   -  2. Under "Signing in to Google", enable 2-Step Verification (if not already enabled).
+   -  3. Once enabled, you’ll see an option called App Passwords if you are not able to see this option then directly search.
+   -  4. Select Mail as the app.
+   -  5. Click Generate → Google will give you a 16-character password.
+   -  6. Copy this password and use it in your Java code instead of your normal Gmail password.
+         
    - For **from**: Your Gmail address (the one for which you generated the App Password).
    - For **to**: any email address you want to send the mail to.
 
