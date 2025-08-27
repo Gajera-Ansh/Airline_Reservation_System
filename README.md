@@ -53,7 +53,7 @@ Welcome to the **Airline Reservation System** repository! This project is design
    - Click Generate → Google will give you a 16-character password.
    - Copy this password and use it in your Java code instead of your normal Gmail password.
    - For **from**: Your Gmail address (the one for which you generated the App Password).
-   - For ***to**: any email address you want to send the mail to.
+   - For **to**: any email address you want to send the mail to.
 
 ## Usage
 
