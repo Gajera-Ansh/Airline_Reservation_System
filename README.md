@@ -45,8 +45,7 @@ Welcome to the **Airline Reservation System** repository! This project is design
 
    - <img width="1347" height="534" alt="image" src="https://github.com/user-attachments/assets/a76af1a3-31f4-4473-8ee4-bb79321a9afd" />
 
-   - Steps to generate App Password:
-
+   - **Steps to generate App Password**:
    - Go to Google Account – Security.
    - Under "Signing in to Google", enable 2-Step Verification (if not already enabled).
    - Once enabled, you’ll see an option called App Passwords if you are not able to see this option then directly search.
